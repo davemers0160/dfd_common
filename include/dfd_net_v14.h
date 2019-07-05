@@ -6,8 +6,8 @@
 #include "dlib/dnn.h"
 #include "dlib/dnn/core.h"
 
-#include "ssim_loss.h"
-#include "l1_loss.h"
+//#include "ssim_loss.h"
+//#include "l1_loss.h"
 #include "gorgon_capture.h"
 
 extern const uint32_t img_depth = 6;

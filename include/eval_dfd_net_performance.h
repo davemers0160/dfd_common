@@ -4,98 +4,131 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdint>
-#include <iostream>
-#include <thread>
+//#include <iostream>
+//#include <thread>
 #include <vector>
-#include <algorithm>
-#include <string>
+//#include <algorithm>
+//#include <string>
 
-// Custom Includes
+// Custom includes
 #include "ssim.h"
 #include "center_cropper.h"
 #include "dlib_matrix_threshold.h"
 #include "calc_silog_error.h"
 
-// dlib includes
+// DLIB includes
 #include <dlib/dnn.h>
 #include <dlib/matrix.h>
 #include <dlib/image_io.h>
 #include <dlib/data_io.h>
 #include <dlib/image_transforms.h>
 
+//-----------------------------------------------------------------------------
+// This function assumes that the ground truth image size and the input image sizes do not have to be the same dimensions
+//-----------------------------------------------------------------------------
+
 template <typename net_type>
-dlib::matrix<double, 1, 4> eval_net_performance(
+dlib::matrix<double,1,6> eval_net_performance(
     net_type &net,
-    std::array<dlib::matrix<uint16_t>, img_depth> td,
-    dlib::matrix<uint16_t> gt,
-    dlib::matrix<uint16_t> &map,
-    std::pair<uint64_t, uint64_t> crop_size
+    std::array<dlib::matrix<uint16_t>, img_depth> &img_in,
+    dlib::matrix<uint16_t> &gt_in,
+    dlib::matrix<uint16_t> &map_out, 
+    std::pair<uint64_t, uint64_t> crop_size,
+    std::pair<uint64_t, uint64_t> scale
 )
 {
+    std::array<dlib::matrix<uint16_t>, img_depth> img_crop;
+    dlib::matrix<uint16_t> gt;
+    dlib::matrix<uint16_t> gt_crop;
+
     double ssim_val = 0.0;
-    double rmse_val = 0.0;
-    double mae_val = 0.0;
+    double nrmse_val = 0.0;
+    double nmae_val = 0.0;
     double silog_val = 0.0;
+    double v_gt = 0.0;
+    double v_dm = 0.0;
 
     uint16_t gt_min = 0, gt_max = 255;
 
-    dlib::find_min_and_max(gt, gt_min, gt_max);
+    // threshold the ground truth to remove the ignore values from the training
+    // this is just incase there are values that are greater than gt_max
+    truncate_threshold(gt_in, gt, gt_max);
 
-    // need to add the cyclic cropper part to make sure that the gpu doesn't crap out on large images
-    map = net(td);
+    // center crop the ground truth image and use the crop dims to figure out where to crop the input image
+    dlib::rectangle rect_gt = get_center_crop_rect(gt, crop_size.second, crop_size.first);
+    gt_crop = dlib::subm(gt, rect_gt);
 
-    // test of the get pixel error
-    //dlib::matrix<double, 1, 4> px_err = get_pixel_error(gt, map);
+    // get the input image crop info
+    dlib::rectangle rect_td(crop_size.second * scale.second, crop_size.first * scale.first);
+
+    // shift the box around
+    dlib::point offset(rect_gt.left()*scale.second, rect_gt.top()*scale.first);
+    rect_td = dlib::move_rect(rect_td, offset);
+
+    // crop the input image
+    for (uint32_t idx = 0; idx<img_depth; ++idx)
+    {
+        img_crop[idx] = dlib::subm(img_in[idx], rect_td);
+    }
+
+    //dlib::find_min_and_max(gt, gt_min, gt_max);
+
+    // get the output results for the network
+    map_out = net(img_crop);
 
     // calculate the scale invariant log error 
-    silog_val = calc_silog_error(gt, map);
+    silog_val = calc_silog_error(gt, map_out);
 
     // subtract the two maps
-    dlib::matrix<float> sub_map = dlib::matrix_cast<float>(map) - dlib::matrix_cast<float>(gt);
+    dlib::matrix<float> sub_map = dlib::matrix_cast<float>(map_out) - dlib::matrix_cast<float>(gt_crop);
 
     double m1 = dlib::mean(dlib::abs(sub_map));
     double m2 = dlib::mean(dlib::squared(sub_map));
 
-    //double var = dlib::variance(gt[idx]);
     double rng = (double)std::max(gt_max - gt_min, 1);
-
-    mae_val = m1 / rng;
-    rmse_val = std::sqrt(m2) / rng;
+    nmae_val = m1 / rng;
+    nrmse_val = std::sqrt(m2) / rng;
 
     dlib::matrix<float> ssim_map;
-    ssim_val = ssim(map, gt, ssim_map);
+    ssim_val = ssim(map_out, gt_crop, ssim_map);
 
-    dlib::matrix<double, 1, 4> res = dlib::zeros_matrix<double>(1, 4);
-    res = mae_val, rmse_val, ssim_val, silog_val;
+    v_gt = (double)dlib::variance(dlib::matrix_cast<float>(gt_crop));
+    v_dm = (double)dlib::variance(dlib::matrix_cast<float>(map_out));
 
+    dlib::matrix<double, 1, 6> res = dlib::zeros_matrix<double>(1, 6);
+    res = nmae_val, nrmse_val, ssim_val, silog_val, v_gt, v_dm;
+    
     return res;
-
+   
 }   // end of eval_net_performance
 
 //-----------------------------------------------------------------------------
 
 template <typename net_type>
-dlib::matrix<double, 1, 4> eval_all_net_performance(
+dlib::matrix<double, 1, 6> eval_all_net_performance(
     net_type &net,
-    std::vector<std::array<dlib::matrix<uint16_t>, img_depth>> &td,
-    std::vector<dlib::matrix<uint16_t>> &gt,
-    std::pair<uint64_t, uint64_t> crop_size
+    std::vector<std::array<dlib::matrix<uint16_t>, img_depth>> &img_in,    
+    std::vector<dlib::matrix<uint16_t>> &gt_in,
+    std::pair<uint64_t, uint64_t> crop_size,
+    std::pair<uint32_t, uint32_t> scale
 )
 {
     uint32_t idx;
-    DLIB_CASSERT(td.size() == gt.size());
+    DLIB_CASSERT(img_in.size() == gt_in.size());
+
     dlib::matrix<uint16_t> map;
-    dlib::matrix<double, 1, 4> results = dlib::zeros_matrix<double>(1, 4);
+    dlib::matrix<double, 1, 6> results = dlib::zeros_matrix<double>(1,6);
 
-    for (idx = 0; idx < td.size(); ++idx)
+    // cycle through each input image and evaluate
+    for (idx = 0; idx < img_in.size(); ++idx)
     {
-        results += eval_net_performance(net, td[idx], gt[idx], map, crop_size);
+        results += eval_net_performance(net, img_in[idx], gt_in[idx], map, crop_size, scale);
     }
+  
+    // return the average values for each metric
+    return (results / (double)img_in.size());
 
-    return (results / (double)td.size());
+}   // end of eval_all_net_performance
 
-} //end of eval_all_net_performance
-
-
-#endif  //EVAL_DFD_NET_PERFORMANCE
-
+//-----------------------------------------------------------------------------
+#endif  // EVAL_DFD_NET_PERFORMANCE
