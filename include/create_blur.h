@@ -12,7 +12,7 @@
 
 using namespace std;
 
-int createGaussKernel(int size, double sigma, cv::Mat &kernel)
+int create_gaussian_kernel(int size, double sigma, cv::Mat &kernel)
 {
 	// assumes a 0 mean Gaussian distribution
 	int row, col;
@@ -38,7 +38,7 @@ int createGaussKernel(int size, double sigma, cv::Mat &kernel)
 }	// end of createGaussKernel
 
 
-void createblur(cv::Mat ImageInFocus, double maxSigma, double minSigma, int classes, vector<cv::Mat> &xt)
+void create_blur(cv::Mat ImageInFocus, double maxSigma, double minSigma, int classes, vector<cv::Mat> &xt)
 {
 	int idx;
 	double BlurStep, sigma;
@@ -71,7 +71,7 @@ void createblur(cv::Mat ImageInFocus, double maxSigma, double minSigma, int clas
         //sigma = maxSigma * std::pow((idx+1)/(double)classes, 0.3);
         //sigma = (maxSigma * 2 * sig_step) / (double)(1 + 2 * std::abs(sig_step));
 
-		createGaussKernel(size, sigma, gaussKernel);
+        create_gaussian_kernel(size, sigma, gaussKernel);
 
 		cv::filter2D(ImageInFocus, tempBlur, CV_64FC1, gaussKernel, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
 
