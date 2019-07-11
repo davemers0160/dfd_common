@@ -59,11 +59,13 @@ dlib::matrix<double,1,6> eval_net_performance(
     gt_crop = dlib::subm(gt, rect_gt);
 
     // get the input image crop info
-    dlib::rectangle rect_td(crop_size.second * scale.second, crop_size.first * scale.first);
+    //dlib::rectangle rect_td(crop_size.second * scale.second, crop_size.first * scale.first);
+    dlib::rectangle rect_td(rect_gt.left()*scale.second, rect_gt.top()*scale.first, rect_gt.right()*scale.second, rect_gt.bottom()*scale.first);
+
 
     // shift the box around
-    dlib::point offset(rect_gt.left()*scale.second, rect_gt.top()*scale.first);
-    rect_td = dlib::move_rect(rect_td, offset);
+    //dlib::point offset(rect_gt.left()*scale.second, rect_gt.top()*scale.first);
+    //rect_td = dlib::move_rect(rect_td, offset);
 
     // crop the input image
     for (uint32_t idx = 0; idx<img_depth; ++idx)
@@ -77,7 +79,7 @@ dlib::matrix<double,1,6> eval_net_performance(
     map_out = net(img_crop);
 
     // calculate the scale invariant log error 
-    silog_val = calc_silog_error(gt, map_out);
+    silog_val = calc_silog_error(gt_crop, map_out);
 
     // subtract the two maps
     dlib::matrix<float> sub_map = dlib::matrix_cast<float>(map_out) - dlib::matrix_cast<float>(gt_crop);
