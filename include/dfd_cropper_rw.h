@@ -40,20 +40,16 @@ public:
 class dfd_rw_cropper
 {
     
-    dlib::chip_dims dims = dlib::chip_dims(54,18);
-    uint32_t scale_x = 6;
-    uint32_t scale_y = 18;
-    bool rand_process = true;
-    //bool expand_data = true;
+    dlib::chip_dims dims = dlib::chip_dims(32, 32);
+    uint32_t scale_x = 1;
+    uint32_t scale_y = 1;
 
     std::vector<cropper_stats> cr_stats;
     std::string recorder_filename = "cropper_stats.bin";
     std::ofstream cropper_recorder;
     bool record_cropper_stats = false;
 
-    //std::mutex rnd_mutex;
     dlib::rand rnd;
-
 
 // ----------------------------------------------------------------------------------------
 
@@ -73,15 +69,15 @@ public:
     
     void set_scale_x(uint32_t x) { scale_x = x; }
     void set_scale_y(uint32_t y) { scale_y = y; }
+
+    void set_scale(std::pair<uint32_t, uint64_t> p)
+    {
+        scale_x = p.second;
+        scale_y = p.first;
+    }
     
     const uint32_t &get_scale_x() const { return scale_x; }
     const uint32_t &get_scale_y() const { return scale_y; }
-
-    void set_rand_proc(bool val) { rand_process = val; }
-    const bool &get_rand_proc() const { return rand_process; } 
-
-    //void set_expand_data(bool val) { expand_data = val; }
-    //const bool &get_expand_data() const { return expand_data; }
 
     void set_expansion_factor(uint32_t val) { expansion_factor = val; }
     const uint32_t &get_expansion_factor() const { return expansion_factor; }
@@ -140,42 +136,21 @@ public:
         long original_size = img_crops.size();
         const uint64_t img_count = img.size();
 
-        //if (expand_data == false)
-        //    crop_expansion_factor = 1;
-        //else
-        //    crop_expansion_factor = 4;
-
         img_crops.resize(original_size + (num_crops * expansion_factor));
         gt_crops.resize(original_size + (num_crops * expansion_factor));
         cr_stats.resize(original_size + (num_crops));
 
-        //for (uint64_t idx = original_size; idx < original_size + (num_crops*crop_multiplier); idx+=crop_multiplier)
-        //{
-        //    uint32_t img_index = rnd.get_integer(img_count);
-        //    (*this)(img[img_index], gt[img_index], &img_crops[idx], &gt_crops[idx]);
-        //}
+        dlib::parallel_for(original_size, original_size + num_crops, [&](long idx)
+        {
+            uint64_t img_index = rnd.get_integer(img_count);
 
-        //if (rand_process == true)
-        //{
-            dlib::parallel_for(original_size, original_size + num_crops, [&](long idx)
-            {
-                uint64_t img_index = rnd.get_integer(img_count);
+            cr_stats[idx].img_index = img_index;
+            cr_stats[idx].img_h = gt[img_index].nr();
+            cr_stats[idx].img_w = gt[img_index].nc();
 
-                cr_stats[idx].img_index = img_index;
-                cr_stats[idx].img_h = gt[img_index].nr();
-                cr_stats[idx].img_w = gt[img_index].nc();
+            (*this)(img[img_index], gt[img_index], &img_crops[idx*expansion_factor], &gt_crops[idx*expansion_factor], &cr_stats[idx]);
+        });
 
-                (*this)(img[img_index], gt[img_index], &img_crops[idx*expansion_factor], &gt_crops[idx*expansion_factor], &cr_stats[idx]);
-            });
-        //}
-        //else
-        //{
-        //    dlib::parallel_for(original_size, original_size + num_crops, [&](long idx)
-        //    {
-        //        //uint64_t img_index = rnd.get_integer(img_count);
-        //        (*this)(img[idx], gt[idx], &img_crops[idx*expansion_factor], &gt_crops[idx*expansion_factor]);
-        //    });
-        //}
 
         save_cropper_stats(cr_stats);
 
@@ -224,49 +199,37 @@ public:
                 e_f = 1;
                 break;
         }
+     
+        // get the crops
+        for (idx = 0; idx < image_depth; ++idx)
+        {
+            img_t[idx] = dlib::subm(img[idx], rect_img);
+        }
+        gt_t = dlib::subm(gt, rect_gt);
 
-        //if (expand_data == true)
-        //{        
-            // get the crops
+        // @mem((img_t[0].data).data, UINT16, 1, img_t[0].nc(),img_t[0].nr(),img_t[0].nc()*2)
+        // @mem((gt_t.data).data, UINT16, 1, gt_t.nc(),gt_t.nr(),gt_t.nc()*2)
+
+        // create the rotations from the base crop
+        array_type1 img_t2;
+        for (jdx = 0; jdx < e_f; ++jdx)
+        {
             for (idx = 0; idx < image_depth; ++idx)
             {
-                img_t[idx] = dlib::subm(img[idx], rect_img);
+                img_crops[jdx][idx] = rotate_90(img_t[idx], jdx * m);
             }
-            gt_t = dlib::subm(gt, rect_gt);
+            gt_crops[jdx] = rotate_90(gt_t, jdx * m);
+        }
 
-            // @mem((img_t[0].data).data, UINT16, 1, img_t[0].nc(),img_t[0].nr(),img_t[0].nc()*2)
-            // @mem((gt_t.data).data, UINT16, 1, gt_t.nc(),gt_t.nr(),gt_t.nc()*2)
-
-            // create the rotations from the base crop
-            array_type1 img_t2;
-            for (jdx = 0; jdx < e_f; ++jdx)
+        // create the left-right flips from the rotations
+        for (jdx = 0; jdx < e_f; ++jdx)
+        {
+            for (idx = 0; idx < image_depth; ++idx)
             {
-                for (idx = 0; idx < image_depth; ++idx)
-                {
-                    img_crops[jdx][idx] = rotate_90(img_t[idx], jdx * m);
-                }
-                gt_crops[jdx] = rotate_90(gt_t, jdx * m);
+                img_crops[jdx + e_f][idx] = dlib::fliplr(img_crops[jdx][idx]);
             }
-
-            // create the left-right flips from the rotations
-            for (jdx = 0; jdx < e_f; ++jdx)
-            {
-                for (idx = 0; idx < image_depth; ++idx)
-                {
-                    img_crops[jdx + e_f][idx] = dlib::fliplr(img_crops[jdx][idx]);
-                }
-                gt_crops[jdx + e_f] = dlib::fliplr(gt_crops[jdx]);
-            }
-        //}
-        //else
-        //{
-        //    for (idx = 0; idx < image_depth; ++idx)
-        //    {
-        //        img_crops[0][idx] = dlib::subm(img[idx], rect_img);
-        //    }
-        //    gt_crops[0] = dlib::subm(gt, rect_gt);
-
-        //}
+            gt_crops[jdx + e_f] = dlib::fliplr(gt_crops[jdx]);
+        }
 
     }	// end of operator()    
  
@@ -274,7 +237,7 @@ public:
 // ----------------------------------------------------------------------------------------
 private:	
 
-    uint32_t expansion_factor = 4;
+    uint32_t expansion_factor = 8;
 
     template <typename image_type1>
     void make_random_cropping_rect(const image_type1& img, dlib::rectangle &rect_im, dlib::rectangle &rect_gt)
@@ -315,8 +278,6 @@ private:
         {
             for (idx = 0; idx < cr_stats.size(); ++idx)
             {
-                //cropper_recorder << cr_stats[idx].img_index << cr_stats[idx].img_h << cr_stats[idx].img_w << cr_stats[idx].x << cr_stats[idx].y;
-                //gorgonStream.write(reinterpret_cast<const char*>(&params_data[idx]), sizeof(params_data[idx]));
                 cropper_recorder.write(reinterpret_cast<const char*>(&cr_stats[idx].img_index), sizeof(cr_stats[idx].img_index));
                 cropper_recorder.write(reinterpret_cast<const char*>(&cr_stats[idx].img_h), sizeof(cr_stats[idx].img_h));
                 cropper_recorder.write(reinterpret_cast<const char*>(&cr_stats[idx].img_w), sizeof(cr_stats[idx].img_w));
@@ -343,7 +304,6 @@ inline std::ostream& operator<< (
     out << "  chip_dims.cols:       " << item.get_chip_dims().cols << std::endl;
     out << "  scale_x:              " << item.get_scale_x() << std::endl;
     out << "  scale_y:              " << item.get_scale_y() << std::endl;
-    out << "  process_rand:         " << item.get_rand_proc() << std::endl;
     out << "  expansion_factor:     " << item.get_expansion_factor() << std::endl;
     return out;
 }
