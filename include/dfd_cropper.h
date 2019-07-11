@@ -1,5 +1,5 @@
-#ifndef DFD_ARRAY_RW_RANDOM_CROPPER_H_
-#define DFD_ARRAY_RW_RANDOM_CROPPER_H_
+#ifndef DFD_ARRAY_RANDOM_CROPPER_H_
+#define DFD_ARRAY_RANDOM_CROPPER_H_
 
 #include <cstdint>
 //#include <mutex>
@@ -311,4 +311,4 @@ inline std::ostream& operator<< (
 // ----------------------------------------------------------------------------------------	
 
 
-#endif	// DFD_ARRAY_RW_RANDOM_CROPPER_H_ 
+#endif	// DFD_ARRAY_RANDOM_CROPPER_H_ 
