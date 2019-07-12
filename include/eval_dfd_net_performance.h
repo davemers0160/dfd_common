@@ -52,11 +52,11 @@ dlib::matrix<double,1,6> eval_net_performance(
 
     // threshold the ground truth to remove the ignore values from the training
     // this is just incase there are values that are greater than gt_max
-    truncate_threshold(gt_in, gt, gt_max);
+    //truncate_threshold(gt_in, gt, gt_max);
 
     // center crop the ground truth image and use the crop dims to figure out where to crop the input image
-    dlib::rectangle rect_gt = get_center_crop_rect(gt, crop_size.second, crop_size.first);
-    gt_crop = dlib::subm(gt, rect_gt);
+    dlib::rectangle rect_gt = get_center_crop_rect(gt_in, crop_size.second, crop_size.first);
+    gt_crop = dlib::subm(gt_in, rect_gt);
 
     // get the input image crop info
     //dlib::rectangle rect_td(crop_size.second * scale.second, crop_size.first * scale.first);
