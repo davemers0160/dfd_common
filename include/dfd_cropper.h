@@ -37,7 +37,7 @@ public:
 // ----------------------------------------------------------------------------------------
 
 
-class dfd_rw_cropper
+class dfd_cropper
 {
     
     dlib::chip_dims dims = dlib::chip_dims(32, 32);
