@@ -295,7 +295,7 @@ private:
 // ----------------------------------------------------------------------------------------
 inline std::ostream& operator<< (
     std::ostream& out,
-    const dfd_rw_cropper& item
+    const dfd_cropper& item
     )
 {
     using std::endl;
