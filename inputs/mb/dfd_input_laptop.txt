@@ -18,7 +18,7 @@
 # Scenario Name
 v14a_32_
 # Stopping criteria
-0.1, 400000
+2.0, 400000
 # Training/Testing input files
 D:/Projects/dfd_common/inputs/mb/dfd_train_data_one2.txt
 D:/Projects/dfd_common/inputs/mb/dfd_test_data_one2.txt

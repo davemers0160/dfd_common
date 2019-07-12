@@ -37,7 +37,7 @@ public:
 // ----------------------------------------------------------------------------------------
 
 
-class dfd_rw_cropper
+class dfd_cropper
 {
     
     dlib::chip_dims dims = dlib::chip_dims(32, 32);
@@ -295,7 +295,7 @@ private:
 // ----------------------------------------------------------------------------------------
 inline std::ostream& operator<< (
     std::ostream& out,
-    const dfd_rw_cropper& item
+    const dfd_cropper& item
     )
 {
     using std::endl;
