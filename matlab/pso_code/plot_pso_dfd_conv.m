@@ -76,7 +76,7 @@ end
 %%
 
 N = size(P,1);
-num_itr = itr;
+num_itr = itr+1;
 X_con = [];
 X_cond = [];
 X_cont = [];
