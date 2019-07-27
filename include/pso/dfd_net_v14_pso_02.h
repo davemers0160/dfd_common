@@ -1,5 +1,5 @@
 // Auto generated c++ header file for PSO testing
-// Iteration Number: 49
+// Iteration Number: 60
 // Population Number: 2
 
 #ifndef NET_DEFINITION_H
@@ -18,7 +18,7 @@ extern const uint32_t img_depth = 6;
 extern const uint32_t secondary = 1;
 extern const std::string train_inputfile = "dfd_train_data_sm2.txt";
 extern const std::string test_inputfile = "dfd_test_data_sm2.txt";
-extern const std::string version = "pso_02_49_";
+extern const std::string version = "pso_02_60_";
 extern const std::vector<std::pair<uint64_t, uint64_t>> crop_sizes = {{32, 32}, {368, 400}};
 extern const uint64_t num_crops = 28;
 extern const std::pair<uint32_t, uint32_t> crop_scale(1, 1);
@@ -29,7 +29,7 @@ typedef struct{
     uint32_t iteration;
     uint32_t pop_num;
 } pso_struct;
-pso_struct pso_info = {49, 2};
+pso_struct pso_info = {60, 2};
 
 //-----------------------------------------------------------------
 
@@ -61,9 +61,9 @@ using dfd_net_type = dlib::loss_multiclass_log_per_pixel<
     dlib::tag1<    dlib::prelu<    dlib::bn_con<    dlib::con<255, 3, 3, 1, 1, 
     dlib::concat2<DTO_2, DTI_2,
     DTI_2<    dlib::cont<251, 2, 2, 2, 2, 
-    dlib::add_prev1<    dlib::con<435, 3, 3, 1, 1, 
-    dlib::prelu<    dlib::bn_con<    dlib::con<193, 3, 3, 1, 1, 
-    dlib::tag1<    con2d<435,    DTO_2<    dlib::add_prev1<    dlib::con<238, 3, 3, 1, 1, 
+    dlib::add_prev1<    dlib::con<434, 3, 3, 1, 1, 
+    dlib::prelu<    dlib::bn_con<    dlib::con<190, 3, 3, 1, 1, 
+    dlib::tag1<    con2d<434,    DTO_2<    dlib::add_prev1<    dlib::con<238, 3, 3, 1, 1, 
     dlib::prelu<    dlib::bn_con<    dlib::con<267, 3, 3, 1, 1, 
     dlib::tag1<    con2d<238,    DTO_1<    dlib::add_prev1<    dlib::con<145, 3, 3, 1, 1, 
     dlib::prelu<    dlib::bn_con<    dlib::con<121, 3, 3, 1, 1, 

@@ -74,7 +74,7 @@ for idx=1:numel(lim)
     p_index(idx) = find(m_total > lim(idx), 1, 'first');
 end
 
-fprintf('\nFinal Convergence: %2.4f%%\n\n', m_total(end));
+fprintf('\nFinal Convergence: %2.4f%%\n\n', m_total(end)*100);
 
 %% plot the results
 

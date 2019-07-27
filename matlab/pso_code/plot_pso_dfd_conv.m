@@ -76,7 +76,7 @@ end
 %%
 
 N = size(P,1);
-num_itr = itr+1;
+num_itr = itr;
 X_con = [];
 X_cond = [];
 X_cont = [];
@@ -268,6 +268,56 @@ ax = gca;
 ax.Position = [0.08 0.1 0.9 0.88];
 plot_num = plot_num + 1;
     
+%% Plot the path of a single parameter within a particle
+
+particle_num = 2;
+param_index = 9;
+particle_name = strcat('Conv Layer',32,num2str(con_index(param_index),': %02d'));
+
+p = X_con(particle_num,:,param_index);
+pb = [P(particle_num,:).con];
+pb = pb(param_index,1:3:end);
+
+gb = [G.con];
+gb = gb(param_index,1:3:end);
+
+y_plt_step = 10;
+
+x_min = 25;
+x_max = num_itr;
+y_min = floor(min(p(x_min:end))/y_plt_step)*y_plt_step;
+y_max = ceil(max(p(x_min:end))/y_plt_step)*y_plt_step;
+
+figure(plot_num)
+set(gcf,'position',([50,50,1200,600]),'color','w')
+hold on
+grid on
+box on
+
+plot([1:num_itr], p, 'LineStyle','-', 'LineWidth', 1, 'Color','b', 'Marker', '.');
+
+set(gca,'fontweight','bold', 'fontsize',13);
+
+xlim([x_min x_max]);
+xticks([x_min:2:x_max]);
+xtickangle(90);
+xlabel('Iteration', 'fontweight', 'bold', 'FontSize', 13);
+set(gca,'XMinorTick','on', 'XMinorGrid','on');
+
+ylim([y_min y_max]);
+yticks([y_min:y_plt_step:y_max]);
+ylabel('Value', 'fontweight', 'bold', 'FontSize', 13);
+set(gca,'YMinorTick','on', 'YMinorGrid','on');
+
+title(strcat('Particle',32,num2str(particle_num),32,'-',32,particle_name,32,'Convergence Track'),'fontweight','bold','FontSize', 16)
+
+ax = gca;
+ax.Position = [0.06 0.12 0.92 0.8];
+ax.XAxis.MinorTickValues = x_min:1:x_max;
+ax.YAxis.MinorTickValues = y_min:1:y_max;
+
+plot_num = plot_num + 1;
+
 %%
 figure(plot_num);
 set(gcf,'position',([50,50,1200,600]),'color','w')

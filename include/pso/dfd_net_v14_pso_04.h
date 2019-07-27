@@ -1,5 +1,5 @@
 // Auto generated c++ header file for PSO testing
-// Iteration Number: 49
+// Iteration Number: 60
 // Population Number: 4
 
 #ifndef NET_DEFINITION_H
@@ -18,9 +18,9 @@ extern const uint32_t img_depth = 6;
 extern const uint32_t secondary = 1;
 extern const std::string train_inputfile = "dfd_train_data_sm2.txt";
 extern const std::string test_inputfile = "dfd_test_data_sm2.txt";
-extern const std::string version = "pso_04_49_";
-extern const std::vector<std::pair<uint64_t, uint64_t>> crop_sizes = {{28, 28}, {368, 400}};
-extern const uint64_t num_crops = 40;
+extern const std::string version = "pso_04_60_";
+extern const std::vector<std::pair<uint64_t, uint64_t>> crop_sizes = {{32, 32}, {368, 400}};
+extern const uint64_t num_crops = 28;
 extern const std::pair<uint32_t, uint32_t> crop_scale(1, 1);
 
 //-----------------------------------------------------------------
@@ -29,7 +29,7 @@ typedef struct{
     uint32_t iteration;
     uint32_t pop_num;
 } pso_struct;
-pso_struct pso_info = {49, 4};
+pso_struct pso_info = {60, 4};
 
 //-----------------------------------------------------------------
 
