@@ -1,6 +1,7 @@
 #ifndef CREATE_DFD_BLUR_H_
 #define CREATE_DFD_BLUR_H_
 
+#include <cstdint>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -38,28 +39,26 @@ int create_gaussian_kernel(int size, double sigma, cv::Mat &kernel)
 }	// end of createGaussKernel
 
 
-void create_blur(cv::Mat ImageInFocus, double maxSigma, double minSigma, int classes, vector<cv::Mat> &xt)
+void create_blur(cv::Mat ImageInFocus, double min_sigma, double sigma_step, uint32_t num_classes, vector<cv::Mat> &xt)
 {
-	int idx;
-	double BlurStep, sigma;
-    //double sigma_step;
+    uint32_t idx;
+	//double sigma;
 
 	// Create Multi-level blur image 
-	BlurStep = maxSigma / (double)classes;
+	//BlurStep = maxSigma / (double)num_classes;
 
-    int size = 27;
+    uint32_t size = 27;
 	cv::Size kernelSize = cv::Size(size, size);
 	cv::Mat gaussKernel;
 	//cv::Mat prevKernel = cv::Mat::zeros(size, size, CV_64FC1);
 
-
-    if (minSigma == 0.0)
-        sigma = BlurStep;
-    else
-        sigma = minSigma;
+    //if (min_sigma == 0.0)
+    //    sigma = BlurStep;
+    //else
+    //    sigma = minSigma;
 
     // normal gaussian kernel creation
-	for (idx = 0; idx < classes; ++idx)
+	for (idx = 0; idx < num_classes; ++idx)
 	{
 		cv::Mat tempBlur;
 
@@ -71,14 +70,14 @@ void create_blur(cv::Mat ImageInFocus, double maxSigma, double minSigma, int cla
         //sigma = maxSigma * std::pow((idx+1)/(double)classes, 0.3);
         //sigma = (maxSigma * 2 * sig_step) / (double)(1 + 2 * std::abs(sig_step));
 
-        create_gaussian_kernel(size, sigma, gaussKernel);
+        create_gaussian_kernel(size, min_sigma, gaussKernel);
 
 		cv::filter2D(ImageInFocus, tempBlur, CV_64FC1, gaussKernel, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
 
 		// push results back into vecor
 		xt.push_back(tempBlur);
 
-        sigma += BlurStep;
+        min_sigma += sigma_step;
 
 	}
 
@@ -99,10 +98,7 @@ void create_blur(cv::Mat ImageInFocus, double maxSigma, double minSigma, int cla
         //sigma += BlurStep;
 
     }
-
 */
-
-
 
 }	// end of createblur
 
