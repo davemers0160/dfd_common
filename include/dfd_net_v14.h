@@ -64,7 +64,9 @@ input -> block55 [dtago0] -------------------------------> [dtagi0] block55 -> c
 template<typename SUBNET> using mp2 = dlib::max_pool<2, 2, 2, 2, SUBNET>;
 template<typename SUBNET> using up2 = dlib::upsample<2, SUBNET>;
 
-// block defintions
+// ----------------------------------------------------------------------------------------
+// block definitions with batch norm
+// ----------------------------------------------------------------------------------------
 template <int N, typename SUBNET> using cbp3_blk = dlib::prelu<dlib::bn_con<con3<N, SUBNET>>>;
 template <int N, typename SUBNET> using cbp5_blk = dlib::prelu<dlib::bn_con<con5<N, SUBNET>>>;
 
@@ -79,9 +81,6 @@ template <int N1, int N2, typename SUBNET> using dfd_block_57 = con5<N1, dlib::p
 template <int N1, int N2, typename SUBNET> using dfd_block_73 = con7<N1, dlib::prelu<dlib::bn_con<con3<N2, SUBNET>>>>;
 template <int N1, int N2, typename SUBNET> using dfd_block_75 = con7<N1, dlib::prelu<dlib::bn_con<con5<N2, SUBNET>>>>;
 template <int N1, int N2, typename SUBNET> using dfd_block_77 = con7<N1, dlib::prelu<dlib::bn_con<con7<N2, SUBNET>>>>;
-
-// ----------------------------------------------------------------------------------------
-
 
 template <int N1,int N2,typename SUBNET>
 using dfd_res_33 = dlib::add_prev1<dfd_block_33<N1,N2, dlib::tag1<SUBNET>>>;
@@ -101,8 +100,19 @@ using dfd_res_55 = dlib::add_prev1<dfd_block_55<N1,N2, dlib::tag1<SUBNET>>>;
 template <int N1,int N2,typename SUBNET>
 using dfd_res_57 = dlib::add_prev1<dfd_block_57<N1,N2, dlib::tag1<SUBNET>>>;
 
+// ----------------------------------------------------------------------------------------
+// block definitions with affine
+// ----------------------------------------------------------------------------------------
+template <int N, typename SUBNET> using acbp3_blk = dlib::prelu<dlib::affine<con3<N, SUBNET>>>;
 
+template <int N1, int N2, typename SUBNET> using adfd_block_33 = con3<N1, dlib::prelu<dlib::affine<con3<N2, SUBNET>>>>;
+
+template <int N1,int N2,typename SUBNET>
+using adfd_res_33 = dlib::add_prev1<adfd_block_33<N1,N2, dlib::tag1<SUBNET>>>;
+
+// ----------------------------------------------------------------------------------------
 // tag definitions
+// ----------------------------------------------------------------------------------------
 template <typename SUBNET> using dtago0 = dlib::add_tag_layer<200, SUBNET>;
 template <typename SUBNET> using dtagi0 = dlib::add_tag_layer<201, SUBNET>;
 template <typename SUBNET> using dtago1 = dlib::add_tag_layer<202, SUBNET>;
@@ -110,19 +120,44 @@ template <typename SUBNET> using dtagi1 = dlib::add_tag_layer<203, SUBNET>;
 template <typename SUBNET> using dtago2 = dlib::add_tag_layer<204, SUBNET>;
 template <typename SUBNET> using dtagi2 = dlib::add_tag_layer<205, SUBNET>;
 
+// ----------------------------------------------------------------------------------------
+// Training Version with batch norm
+// ----------------------------------------------------------------------------------------
 using dfd_net_type = dlib::loss_multiclass_log_per_pixel<
-	con3<256, dlib::prelu<dlib::bn_con<dfd_res_33<256, 256,cbp3_blk<256,
+	con3<256, dlib::prelu<dlib::bn_con<dfd_res_33<256, 256, cbp3_blk<256,
 
     dlib::concat2<dtago1, dtagi1,
-    dtagi1<cont2u<256, dfd_res_33<512,512,cbp3_blk<512,
+    dtagi1<cont2u<256, dfd_res_33<512, 512, cbp3_blk<512,
 
     dlib::concat2<dtago2, dtagi2,
-    dtagi2<cont2u<512, dfd_res_33<1024,1024,con2d<1024,
+    dtagi2<cont2u<512, dfd_res_33<1024, 1024, con2d<1024,
     
-    dtago2<dfd_res_33<512,512,con2d<512,
+    dtago2<dfd_res_33<512, 512, con2d<512,
 	
-    dtago1<dfd_res_33<256, 256,	cbp3_blk<256, dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>
+    dtago1<dfd_res_33<256, 256, cbp3_blk<256, dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>
     >>>>>>>>>>>>>>>>>>>>>>>;
+
+    
+// ----------------------------------------------------------------------------------------
+// Version with affine layers
+// ----------------------------------------------------------------------------------------
+using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
+	con3<256, dlib::prelu<dlib::affine<adfd_res_33<256, 256, acbp3_blk<256,
+
+    dlib::concat2<dtago1, dtagi1,
+    dtagi1<cont2u<256, adfd_res_33<512,512,acbp3_blk<512,
+
+    dlib::concat2<dtago2, dtagi2,
+    dtagi2<cont2u<512, adfd_res_33<1024,1024,con2d<1024,
+    
+    dtago2<adfd_res_33<512,512,con2d<512,
+	
+    dtago1<adfd_res_33<256, 256, acbp3_blk<256, dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>
+    >>>>>>>>>>>>>>>>>>>>>>>;
+    
+    
+    
+    
 
 // ----------------------------------------------------------------------------------------
 // Configuration function

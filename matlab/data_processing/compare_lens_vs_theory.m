@@ -48,10 +48,12 @@ end
 %% match the rw lens value to the theoretical
 commandwindow;
 %f_num, focal length, d_o
-x_lim = [1,75; 9.88,9.88; 50,200000];
-v_max = [-0.25, 0.25; -0.5, 0.5; -10,10];
-itr_max = 50;
-N = 500;
+x_lim = [0.1,90; 9.88,9.88; 40,500000];
+v_max = [-0.1, 0.1; -0.0, 0.0; -250, 250];
+itr_max = 5000;
+N = 4000;
+c1 = 2.1;
+c2 = 2.1;
 
 px_size = 0.0048;                       % pixel size (mm)
 c_lim = 1*px_size;
@@ -67,7 +69,7 @@ d_o = zeros(num_steps,1);
 figure(plot_num)
 set(gcf,'position',([100,100,1200,600]),'color','w')
     
-for idx=1:17
+for idx=1:1
 
     fprintf('\n');
     fprintf('Voltage Step, Focal Distance ${d_{o}}$, ${F_{num}}$, Focal Length, Error\n');
@@ -76,31 +78,31 @@ for idx=1:17
     tmp_do = range(pixel<=2);  
     
     if(isempty(tmp_do))
-        x_lim(3,:) = [50, 200000];
+        x_lim(3,:) = [40, 500000];
         
     elseif(numel(tmp_do) == 1)
         if(tmp_do == range(1))
-            x_lim(3,:) = [50, tmp_do];
+            x_lim(3,:) = [40, tmp_do];
         elseif(tmp_do == range(end))
-            x_lim(3,:) = [tmp_do, 200000];
+            x_lim(3,:) = [tmp_do, 500000];
         end
     else
         if(tmp_do(1) == tmp_do(2))
-            x_lim(3,:) = [50, 200000];
+            x_lim(3,:) = [40, 500000];
         else
             x_lim(3,:) = [tmp_do(1), tmp_do(2)];
         end
     end
     
-    for jdx=1:20
+    for jdx=1:1
 
-        [x, v, g, p, pso_stats, itr_cnt] = PSO(@get_coc, N, itr_max, v_max, x_lim, 1.7, 2.1, 2.1, 'constrict');
+        [x, v, g, p, pso_stats, itr_cnt] = PSO(@get_coc, N, itr_max, v_max, x_lim, 1.7, c1, c2, 'constrict');
 
-        [err] = get_coc(g(:,end)');
+        [err] = get_coc(g(:,itr_cnt)');
 
-        f_num(idx,1) = g(1, end);
-        fl(idx,1) = g(2,end);
-        d_o(idx,1) = g(3,end);
+        f_num(idx,1) = g(1, itr_cnt);
+        fl(idx,1) = g(2,itr_cnt);
+        d_o(idx,1) = g(3,itr_cnt);
 
         fprintf('%s, %2.4f, %2.4f, %2.4f, %2.4f\n', lens_step{idx,1}, d_o(idx,1), f_num(idx,1), fl(idx,1), err);
         
@@ -160,8 +162,6 @@ end
 return;
 
 %% Setup the lens and camera parameters
-
-
 
 Dn = ((d_o)*(fl*fl)/(fl*fl+c_lim*f_num*(d_o-fl)))/1000;
 Df = ((d_o)*(fl*fl)/(fl*fl-c_lim*f_num*(d_o-fl)))/1000;

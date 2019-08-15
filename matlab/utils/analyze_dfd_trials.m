@@ -53,6 +53,9 @@ fprintf('Mean:, %2.4f, %2.4f, %2.4f\n', nmae_stats(2,2), nrmse_stats(2,2), ssim_
 fprintf('Max:, %2.4f, %2.4f, %2.4f\n', nmae_stats(3,2), nrmse_stats(3,2), ssim_stats(3,2));
 fprintf('Std:, %2.4f, %2.4f, %2.4f\n', nmae_stats(4,2), nrmse_stats(4,2), ssim_stats(4,2));
 
+combined_test = cat(2, nmae(:,2), nrmse(:,2), ssim(:,2));
+[comb_test_sort, comb_index] = sortrows(combined_test, [2,1], 'ascend');
+
 
 %% Another way of showing the same info
 % Plot the 2 sigma area along with the results from each of the
@@ -99,8 +102,8 @@ xticklabels([]);
 
 % Y-Axis
 p = 100;
-nrmse_plt_max = ceil(limits_test(2,2)*p)/p;
-nrmse_plt_min = floor(limits_test(2,1)*p)/p;
+nrmse_plt_max = max(ceil(limits_test(2,2)*p)/p, ceil(nrmse_stats(3,2)*p)/p);
+nrmse_plt_min = min(floor(limits_test(2,1)*p)/p, floor(nrmse_stats(1,2)*p)/p);
 %dfd
 % nrmse_plt_max = 0.08;
 % nrmse_plt_min = 0.05;
@@ -146,8 +149,8 @@ xticklabels([]);
 
 % Y-Axis
 p = 500;
-nmae_plt_max = ceil(limits_test(1,2)*p)/p;
-nmae_plt_min = floor(limits_test(1,1)*p)/p;
+nmae_plt_max = max(ceil(limits_test(1,2)*p)/p, ceil(nmae_stats(3,2)*p)/p);
+nmae_plt_min = min(floor(limits_test(1,1)*p)/p, floor(nmae_stats(1,2)*p)/p);
 % nmae_plt_max = 0.021;
 % nmae_plt_min = 0.015;
 ylim([nmae_plt_min nmae_plt_max]);
@@ -192,9 +195,9 @@ xtickangle(90);
 xlabel(strcat('Training Event Number'), 'fontweight', 'bold', 'FontSize', 13);
 
 % Y-Axis
-p = 40;
-ssim_plt_max = ceil(limits_test(3,2)*p)/p;
-ssim_plt_min = floor(limits_test(3,1)*p)/p;
+p = 100;
+ssim_plt_max = max(ceil(limits_test(3,2)*p)/p, ceil(ssim_stats(3,2)*p)/p);
+ssim_plt_min = min(floor(limits_test(3,1)*p)/p, ceil(ssim_stats(1,2)*p)/p);
 % ssim_plt_max = 0.925;
 % ssim_plt_min = 0.895;
 ylim([ssim_plt_min ssim_plt_max]);
