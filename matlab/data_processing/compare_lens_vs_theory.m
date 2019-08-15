@@ -48,12 +48,12 @@ end
 %% match the rw lens value to the theoretical
 commandwindow;
 %f_num, focal length, d_o
-x_lim = [0.1,90; 9.88,9.88; 40,500000];
-v_max = [-0.1, 0.1; -0.0, 0.0; -250, 250];
-itr_max = 5000;
-N = 4000;
+x_lim = [0.1,80; 9.88,9.88; 350000,500000];
+v_max = [-0.1, 0.1; -0.0, 0.0; -200, 200];
+itr_max = 2000;
+N = 3000;
 c1 = 2.1;
-c2 = 2.1;
+c2 = 2.0;
 
 px_size = 0.0048;                       % pixel size (mm)
 c_lim = 1*px_size;
@@ -77,22 +77,22 @@ for idx=1:1
     pixel = lens_pixel{idx,1};   
     tmp_do = range(pixel<=2);  
     
-    if(isempty(tmp_do))
-        x_lim(3,:) = [40, 500000];
-        
-    elseif(numel(tmp_do) == 1)
-        if(tmp_do == range(1))
-            x_lim(3,:) = [40, tmp_do];
-        elseif(tmp_do == range(end))
-            x_lim(3,:) = [tmp_do, 500000];
-        end
-    else
-        if(tmp_do(1) == tmp_do(2))
-            x_lim(3,:) = [40, 500000];
-        else
-            x_lim(3,:) = [tmp_do(1), tmp_do(2)];
-        end
-    end
+%     if(isempty(tmp_do))
+%         x_lim(3,:) = [40, 500000];
+%         
+%     elseif(numel(tmp_do) == 1)
+%         if(tmp_do == range(1))
+%             x_lim(3,:) = [40, tmp_do];
+%         elseif(tmp_do == range(end))
+%             x_lim(3,:) = [tmp_do, 500000];
+%         end
+%     else
+%         if(tmp_do(1) == tmp_do(2))
+%             x_lim(3,:) = [40, 500000];
+%         else
+%             x_lim(3,:) = [tmp_do(1), tmp_do(2)];
+%         end
+%     end
     
     for jdx=1:1
 
@@ -221,65 +221,65 @@ plot_num = plot_num + 1;
 
 %% ----------------------------
 
-function [err] = get_coc(x)
-    global pixel px_size range
-
-    
-    f_num = x(1);
-    f = x(2);
-    d_o = x(3);
-    
-    %     px_size = 0.0048;    % pixel size (mm)
-% %     pixel = [7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+% function [err] = get_coc(x)
+%     global pixel px_size range
+% 
 %     
-    
-    % 135
-%     d_o = 0.93*1000;     % mm
-%     d_near = [220, 248, 308, 346, 414, 482, 754];
-%     d_far = [1232, 1910, 3589];
-%     em = [2 1 1 1 1 1 1 4 10 12];
-%     pixel = pixel(1:10);
-    
-    % 129
-%     d_o = 5.5*1000;     % mm
-%     d_near = [506,610,740,926,1168,1744,5110];
-%     d_far = [];  
-    
-    dn = (range <= d_o);
-    
-    d_near = range(dn);
-    d_far = range(~dn);
-    
-%     em = [2 2 2 1 1 1 1];
-
-
-    % 143
-%     d_o = 0.262*1000;     % mm
-%     d_near = [110, 134, 152, 168, 190, 206, 250];
-%     d_far = [296, 398, 470, 548, 672, 914, 1260, 1934, 2970];  
-%     em1 = [2 2 2 1 1 1 1];
-%     em2 = [1 1 1 1 1 1 1 1 1];
-%     em = cat(2,em1,em2);
-%     pixel = pixel(1:16);
-    
-
-            
-    tl = (d_o*f*f)/(f_num*(d_o-f));
-    
-    coc_far = tl*((1/d_o)-(1./d_far));
-    coc_near = tl*((1./d_near) - (1/d_o));
-    
-    CoC = [coc_near coc_far];  
-    
-    
-    px = (CoC/px_size);
-    px = ceil(px);
-    
-%     err = (pixel - px).*(pixel - px);
-%     err = mean(err);
-%     err = sum(abs(pixel - px).*em);
-    err = sum(abs(pixel - px));
-    
-end
+%     f_num = x(1);
+%     f = x(2);
+%     d_o = x(3);
+%     
+%     %     px_size = 0.0048;    % pixel size (mm)
+% % %     pixel = [7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+% %     
+%     
+%     % 135
+% %     d_o = 0.93*1000;     % mm
+% %     d_near = [220, 248, 308, 346, 414, 482, 754];
+% %     d_far = [1232, 1910, 3589];
+% %     em = [2 1 1 1 1 1 1 4 10 12];
+% %     pixel = pixel(1:10);
+%     
+%     % 129
+% %     d_o = 5.5*1000;     % mm
+% %     d_near = [506,610,740,926,1168,1744,5110];
+% %     d_far = [];  
+%     
+%     dn = (range <= d_o);
+%     
+%     d_near = range(dn);
+%     d_far = range(~dn);
+%     
+% %     em = [2 2 2 1 1 1 1];
+% 
+% 
+%     % 143
+% %     d_o = 0.262*1000;     % mm
+% %     d_near = [110, 134, 152, 168, 190, 206, 250];
+% %     d_far = [296, 398, 470, 548, 672, 914, 1260, 1934, 2970];  
+% %     em1 = [2 2 2 1 1 1 1];
+% %     em2 = [1 1 1 1 1 1 1 1 1];
+% %     em = cat(2,em1,em2);
+% %     pixel = pixel(1:16);
+%     
+% 
+%             
+%     tl = (d_o*f*f)/(f_num*(d_o-f));
+%     
+%     coc_far = tl*((1/d_o)-(1./d_far));
+%     coc_near = tl*((1./d_near) - (1/d_o));
+%     
+%     CoC = [coc_near coc_far];  
+%     
+%     
+%     px = (CoC/px_size);
+%     px = ceil(px);
+%     
+% %     err = (pixel - px).*(pixel - px);
+% %     err = mean(err);
+% %     err = sum(abs(pixel - px).*em);
+%     err = sum(abs(pixel - px));
+%     
+% end
 
 
