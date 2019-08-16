@@ -69,7 +69,7 @@ d_o = zeros(num_steps,1);
 figure(plot_num)
 set(gcf,'position',([100,100,1200,600]),'color','w')
     
-for idx=1:1
+for idx=2:2
 
     fprintf('\n');
     fprintf('Voltage Step, Focal Distance ${d_{o}}$, ${F_{num}}$, Focal Length, Error\n');
