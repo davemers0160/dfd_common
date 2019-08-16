@@ -48,12 +48,12 @@ end
 %% match the rw lens value to the theoretical
 commandwindow;
 %f_num, focal length, d_o
-x_lim = [0.1,80; 9.88,9.88; 350000,500000];
-v_max = [-0.1, 0.1; -0.0, 0.0; -200, 200];
-itr_max = 2000;
+x_lim = [0.1,10; 9.88,9.88; 0,1000];
+v_max = [-0.1, 0.1; -0.0, 0.0; -10, 10];
+itr_max = 300;
 N = 3000;
 c1 = 2.1;
-c2 = 2.0;
+c2 = 2.1;
 
 px_size = 0.0048;                       % pixel size (mm)
 c_lim = 1*px_size;
@@ -94,7 +94,7 @@ for idx=2:2
 %         end
 %     end
     
-    for jdx=1:1
+    for jdx=1:20
 
         [x, v, g, p, pso_stats, itr_cnt] = PSO(@get_coc, N, itr_max, v_max, x_lim, 1.7, c1, c2, 'constrict');
 
@@ -147,11 +147,11 @@ for idx=2:2
         ylabel('Blur Radius (pixels)', 'fontweight','bold','FontSize', 13);
 
         title(strcat('Object Distance vs. Radius of Blur - Voltage Step:',32,lens_step{idx,1}), 'fontweight','bold', 'FontSize', 16);
-        legend('Theoretical Blur Radius','Quantized Blur Radius','Lens Blur Radius', 'location', 'southoutside', 'orientation','horizontal');
+        legend('Theoretical Blur Radius','Quantized Blur Radius','Measured Lens Blur Radius', 'location', 'southoutside', 'orientation','horizontal');
 
-        str = {sprintf('f number      = %2.2f', f_num(idx,1)),...
-               sprintf('focal length = %2.2f', fl(idx,1))};
-        annotation('textbox',[0.825,0.764,0.23,0.14],'String',str,'FitBoxToText','on','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w');
+        str = {sprintf('f-number \t \t = %2.2f', f_num(idx,1)),...
+               sprintf('focus distance \t = %2.2f', d_o(idx,1))};
+        annotation('textbox',[0.77,0.764,0.23,0.14],'String',str,'FitBoxToText','on','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w');
         ax = gca;
         ax.Position = [0.05 0.16 0.93 0.77];
         drawnow;
@@ -218,6 +218,31 @@ ax.Position = [0.05 0.16 0.93 0.77];
 
 plot_num = plot_num + 1;
 
+return
+
+%% test things
+
+%x1 = ones(1,100000)*2.92;
+x1 = [3.0:0.01:5.5];
+x3 = [100:0.1:600];
+x2 = ones(1,numel(x3))*9.88;
+
+
+err = [];
+for idx=1:numel(x1)
+    x = cat(1, x1(idx)*ones(1,numel(x3)),x2,x3);
+    [err(idx,:)] = get_coc(x(:,:))';
+end
+
+figure
+surf(x3, x1, err)
+shading interp
+xlabel('d_o');
+ylabel('f_{num}');
+zlim([0,10]);
+
+min(err(:))
+max(err(:))
 
 %% ----------------------------
 
