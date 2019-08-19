@@ -62,7 +62,7 @@ legend('Blur Radius','Quantized Blur Radius',strcat('CoC_{max} =', 32, num2str(C
 ax = gca;
 ax.Position = [0.05 0.11 0.93 0.83];
 
-print(plot_num, '-dpng', fullfile(save_location,'blur_radius2.png'));
+%print(plot_num, '-dpng', fullfile(save_location,'blur_radius2.png'));
 
 plot_num = plot_num + 1;
 
