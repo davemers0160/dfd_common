@@ -16,14 +16,14 @@
 #             goes from outer most to the inner most layer.
 #
 # Scenario Name
-v14a_32_
+v14a_32_dual_
 # Stopping criteria
-2.0, 400000
+160.0, 400000
 # Training/Testing input files
-D:/Projects/dfd_common/inputs/mb/dfd_train_data_one2.txt
-D:/Projects/dfd_common/inputs/mb/dfd_test_data_one2.txt
+D:/Projects/dfd_common/inputs/mb/dfd_train_data_sm_v3.txt
+D:/Projects/dfd_common/inputs/mb/dfd_test_data_sm_v3.txt
 # Number of crops
-3
+70
 # Crop sizes: [training], [evaluation]
 32,32, 352,352
 # Cropping scales/expansion factor

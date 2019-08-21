@@ -48,10 +48,12 @@ end
 %% match the rw lens value to the theoretical
 commandwindow;
 %f_num, focal length, d_o
-x_lim = [1,75; 9.88,9.88; 50,200000];
-v_max = [-0.25, 0.25; -0.5, 0.5; -10,10];
-itr_max = 50;
-N = 500;
+x_lim = [0.1,10; 9.88,9.88; 0,1000];
+v_max = [-0.1, 0.1; -0.0, 0.0; -10, 10];
+itr_max = 300;
+N = 3000;
+c1 = 2.1;
+c2 = 2.1;
 
 px_size = 0.0048;                       % pixel size (mm)
 c_lim = 1*px_size;
@@ -67,7 +69,7 @@ d_o = zeros(num_steps,1);
 figure(plot_num)
 set(gcf,'position',([100,100,1200,600]),'color','w')
     
-for idx=1:17
+for idx=2:2
 
     fprintf('\n');
     fprintf('Voltage Step, Focal Distance ${d_{o}}$, ${F_{num}}$, Focal Length, Error\n');
@@ -75,32 +77,32 @@ for idx=1:17
     pixel = lens_pixel{idx,1};   
     tmp_do = range(pixel<=2);  
     
-    if(isempty(tmp_do))
-        x_lim(3,:) = [50, 200000];
-        
-    elseif(numel(tmp_do) == 1)
-        if(tmp_do == range(1))
-            x_lim(3,:) = [50, tmp_do];
-        elseif(tmp_do == range(end))
-            x_lim(3,:) = [tmp_do, 200000];
-        end
-    else
-        if(tmp_do(1) == tmp_do(2))
-            x_lim(3,:) = [50, 200000];
-        else
-            x_lim(3,:) = [tmp_do(1), tmp_do(2)];
-        end
-    end
+%     if(isempty(tmp_do))
+%         x_lim(3,:) = [40, 500000];
+%         
+%     elseif(numel(tmp_do) == 1)
+%         if(tmp_do == range(1))
+%             x_lim(3,:) = [40, tmp_do];
+%         elseif(tmp_do == range(end))
+%             x_lim(3,:) = [tmp_do, 500000];
+%         end
+%     else
+%         if(tmp_do(1) == tmp_do(2))
+%             x_lim(3,:) = [40, 500000];
+%         else
+%             x_lim(3,:) = [tmp_do(1), tmp_do(2)];
+%         end
+%     end
     
     for jdx=1:20
 
-        [x, v, g, p, pso_stats, itr_cnt] = PSO(@get_coc, N, itr_max, v_max, x_lim, 1.7, 2.1, 2.1, 'constrict');
+        [x, v, g, p, pso_stats, itr_cnt] = PSO(@get_coc, N, itr_max, v_max, x_lim, 1.7, c1, c2, 'constrict');
 
-        [err] = get_coc(g(:,end)');
+        [err] = get_coc(g(:,itr_cnt)');
 
-        f_num(idx,1) = g(1, end);
-        fl(idx,1) = g(2,end);
-        d_o(idx,1) = g(3,end);
+        f_num(idx,1) = g(1, itr_cnt);
+        fl(idx,1) = g(2,itr_cnt);
+        d_o(idx,1) = g(3,itr_cnt);
 
         fprintf('%s, %2.4f, %2.4f, %2.4f, %2.4f\n', lens_step{idx,1}, d_o(idx,1), f_num(idx,1), fl(idx,1), err);
         
@@ -145,11 +147,11 @@ for idx=1:17
         ylabel('Blur Radius (pixels)', 'fontweight','bold','FontSize', 13);
 
         title(strcat('Object Distance vs. Radius of Blur - Voltage Step:',32,lens_step{idx,1}), 'fontweight','bold', 'FontSize', 16);
-        legend('Theoretical Blur Radius','Quantized Blur Radius','Lens Blur Radius', 'location', 'southoutside', 'orientation','horizontal');
+        legend('Theoretical Blur Radius','Quantized Blur Radius','Measured Lens Blur Radius', 'location', 'southoutside', 'orientation','horizontal');
 
-        str = {sprintf('f number      = %2.2f', f_num(idx,1)),...
-               sprintf('focal length = %2.2f', fl(idx,1))};
-        annotation('textbox',[0.825,0.764,0.23,0.14],'String',str,'FitBoxToText','on','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w');
+        str = {sprintf('f-number \t \t = %2.2f', f_num(idx,1)),...
+               sprintf('focus distance \t = %2.2f', d_o(idx,1))};
+        annotation('textbox',[0.77,0.764,0.23,0.14],'String',str,'FitBoxToText','on','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w');
         ax = gca;
         ax.Position = [0.05 0.16 0.93 0.77];
         drawnow;
@@ -160,8 +162,6 @@ end
 return;
 
 %% Setup the lens and camera parameters
-
-
 
 Dn = ((d_o)*(fl*fl)/(fl*fl+c_lim*f_num*(d_o-fl)))/1000;
 Df = ((d_o)*(fl*fl)/(fl*fl-c_lim*f_num*(d_o-fl)))/1000;
@@ -218,68 +218,93 @@ ax.Position = [0.05 0.16 0.93 0.77];
 
 plot_num = plot_num + 1;
 
+return
+
+%% test things
+
+%x1 = ones(1,100000)*2.92;
+x1 = [3.0:0.01:5.5];
+x3 = [100:0.1:600];
+x2 = ones(1,numel(x3))*9.88;
+
+
+err = [];
+for idx=1:numel(x1)
+    x = cat(1, x1(idx)*ones(1,numel(x3)),x2,x3);
+    [err(idx,:)] = get_coc(x(:,:))';
+end
+
+figure
+surf(x3, x1, err)
+shading interp
+xlabel('d_o');
+ylabel('f_{num}');
+zlim([0,10]);
+
+min(err(:))
+max(err(:))
 
 %% ----------------------------
 
-function [err] = get_coc(x)
-    global pixel px_size range
-
-    
-    f_num = x(1);
-    f = x(2);
-    d_o = x(3);
-    
-    %     px_size = 0.0048;    % pixel size (mm)
-% %     pixel = [7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+% function [err] = get_coc(x)
+%     global pixel px_size range
+% 
 %     
-    
-    % 135
-%     d_o = 0.93*1000;     % mm
-%     d_near = [220, 248, 308, 346, 414, 482, 754];
-%     d_far = [1232, 1910, 3589];
-%     em = [2 1 1 1 1 1 1 4 10 12];
-%     pixel = pixel(1:10);
-    
-    % 129
-%     d_o = 5.5*1000;     % mm
-%     d_near = [506,610,740,926,1168,1744,5110];
-%     d_far = [];  
-    
-    dn = (range <= d_o);
-    
-    d_near = range(dn);
-    d_far = range(~dn);
-    
-%     em = [2 2 2 1 1 1 1];
-
-
-    % 143
-%     d_o = 0.262*1000;     % mm
-%     d_near = [110, 134, 152, 168, 190, 206, 250];
-%     d_far = [296, 398, 470, 548, 672, 914, 1260, 1934, 2970];  
-%     em1 = [2 2 2 1 1 1 1];
-%     em2 = [1 1 1 1 1 1 1 1 1];
-%     em = cat(2,em1,em2);
-%     pixel = pixel(1:16);
-    
-
-            
-    tl = (d_o*f*f)/(f_num*(d_o-f));
-    
-    coc_far = tl*((1/d_o)-(1./d_far));
-    coc_near = tl*((1./d_near) - (1/d_o));
-    
-    CoC = [coc_near coc_far];  
-    
-    
-    px = (CoC/px_size);
-    px = ceil(px);
-    
-%     err = (pixel - px).*(pixel - px);
-%     err = mean(err);
-%     err = sum(abs(pixel - px).*em);
-    err = sum(abs(pixel - px));
-    
-end
+%     f_num = x(1);
+%     f = x(2);
+%     d_o = x(3);
+%     
+%     %     px_size = 0.0048;    % pixel size (mm)
+% % %     pixel = [7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+% %     
+%     
+%     % 135
+% %     d_o = 0.93*1000;     % mm
+% %     d_near = [220, 248, 308, 346, 414, 482, 754];
+% %     d_far = [1232, 1910, 3589];
+% %     em = [2 1 1 1 1 1 1 4 10 12];
+% %     pixel = pixel(1:10);
+%     
+%     % 129
+% %     d_o = 5.5*1000;     % mm
+% %     d_near = [506,610,740,926,1168,1744,5110];
+% %     d_far = [];  
+%     
+%     dn = (range <= d_o);
+%     
+%     d_near = range(dn);
+%     d_far = range(~dn);
+%     
+% %     em = [2 2 2 1 1 1 1];
+% 
+% 
+%     % 143
+% %     d_o = 0.262*1000;     % mm
+% %     d_near = [110, 134, 152, 168, 190, 206, 250];
+% %     d_far = [296, 398, 470, 548, 672, 914, 1260, 1934, 2970];  
+% %     em1 = [2 2 2 1 1 1 1];
+% %     em2 = [1 1 1 1 1 1 1 1 1];
+% %     em = cat(2,em1,em2);
+% %     pixel = pixel(1:16);
+%     
+% 
+%             
+%     tl = (d_o*f*f)/(f_num*(d_o-f));
+%     
+%     coc_far = tl*((1/d_o)-(1./d_far));
+%     coc_near = tl*((1./d_near) - (1/d_o));
+%     
+%     CoC = [coc_near coc_far];  
+%     
+%     
+%     px = (CoC/px_size);
+%     px = ceil(px);
+%     
+% %     err = (pixel - px).*(pixel - px);
+% %     err = mean(err);
+% %     err = sum(abs(pixel - px).*em);
+%     err = sum(abs(pixel - px));
+%     
+% end
 
 

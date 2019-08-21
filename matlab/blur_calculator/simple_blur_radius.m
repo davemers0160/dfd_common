@@ -13,7 +13,7 @@ plot_num = 1;
 px_size = 0.0048;       % pixel size (mm)
 fl = 9.6;            % mm
 f_num = 3.7;        % unitless
-d_o = 0.5*1000;     % mm
+d_o = 1.0*1000;     % mm
 
 limits =[0.1, 5];  % m
 
@@ -34,16 +34,17 @@ y_axis_labels = num2str(y_axis_ticks'/px_size);
 
 %% Plot the main blur radius curve
 save_location = 'D:\IUPUI\PhD\Images\Optics';
+lw = 1.0;
 
 figure(plot_num)
 set(gcf,'position',([100,100,1200,600]),'color','w')
 hold on
 box on
 grid on
-plot(S_range/1000, CoC,'.-b');
-plot(S_range/1000, px*px_size,'-k');
-plot([0, S_range(end)/1000], [CoC_max, CoC_max],'-g');
-stem([Dn, Df],[CoC_max, CoC_max],'.r');
+plot(S_range/1000, CoC, 'LineWidth', lw, 'LineStyle', '-', 'Marker', '.', 'Color', 'b', 'MarkerSize', 9);
+plot(S_range/1000, px*px_size, 'LineWidth', lw, 'LineStyle', '-', 'Marker', 'none', 'Color', 'k', 'MarkerSize', 9);
+plot([0, S_range(end)/1000], [CoC_max, CoC_max], 'LineWidth', lw, 'LineStyle', '--', 'Marker', 'none', 'Color', 'g', 'MarkerSize', 9);
+stem([Dn, Df],[100, 100], 'LineWidth', lw, 'LineStyle', '-', 'Marker', 'none', 'Color', 'r', 'MarkerSize', 9);
 set(gca,'FontSize', 13, 'fontweight','bold');
 
 % X-Axis
@@ -61,7 +62,7 @@ legend('Blur Radius','Quantized Blur Radius',strcat('CoC_{max} =', 32, num2str(C
 ax = gca;
 ax.Position = [0.05 0.11 0.93 0.83];
 
-print(plot_num, '-dpng', fullfile(save_location,'blur_radius2.png'));
+%print(plot_num, '-dpng', fullfile(save_location,'blur_radius2.png'));
 
 plot_num = plot_num + 1;
 
