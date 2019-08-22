@@ -12,7 +12,7 @@ function [err] = get_coc(x)
     end
     
     
-    for idx=1:numel(d_o)
+    parfor idx=1:numel(d_o)
         dn = (range <= d_o(idx));
 
         d_near = range(dn);

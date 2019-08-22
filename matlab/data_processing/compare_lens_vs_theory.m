@@ -48,7 +48,7 @@ end
 %% match the rw lens value to the theoretical
 
 %f_num, focal length, d_o
-x_lim = [0.1,4.0; 9.88,9.88; 2000,4000];
+x_lim = [0.1,4.0; 9.88,9.88; 250000,260000];
 v_max = [-0.05, 0.05; -0.0, 0.0; -5, 5];
 itr_max = 400;
 N = 4000;
@@ -231,27 +231,31 @@ return
 % x1 = [x_lim(1,1):0.005:x_lim(1,2)];
 % x3 = [x_lim(3,1):0.2:x_lim(3,2)];
 
-x1 = [2.15:0.05:3.55];
-x3 = [50000:0.1:100000];
+%x1 = [2.3:0.1:3.4];
+x1 = [2.5:0.01:3.0];
+x3 = [270000:1.0:300000];
 
 x2 = ones(1,numel(x3))*9.88;
 
 err = [];
+tic;
 for idx=1:numel(x1)
     x = cat(1, x1(idx)*ones(1,numel(x3)),x2,x3);
     [err(idx,:)] = get_coc(x(:,:))';
 end
+toc
 
 figure(plot_num)
 surf(x3, x1, err)
 shading interp
 xlabel('d_o');
 ylabel('f_{num}');
-zlim([0,300]);
+zlim([0,50]);
 % zlim([0,20]);
-colormap(jet(100))
+colormap(jet(100));
 view(90,90);
 
+fprintf('Range: %06d - %06d\n', x3(1), x3(end));
 fprintf('Min: %d\n', min(err(:)));
 fprintf('Max: %d\n', max(err(:)));
 plot_num = plot_num + 1;
