@@ -46,12 +46,12 @@ end
 
 
 %% match the rw lens value to the theoretical
-commandwindow;
+
 %f_num, focal length, d_o
-x_lim = [0.1,10; 9.88,9.88; 0,1000];
-v_max = [-0.1, 0.1; -0.0, 0.0; -10, 10];
-itr_max = 300;
-N = 3000;
+x_lim = [0.1,4.0; 9.88,9.88; 2000,4000];
+v_max = [-0.05, 0.05; -0.0, 0.0; -5, 5];
+itr_max = 400;
+N = 4000;
 c1 = 2.1;
 c2 = 2.1;
 
@@ -68,8 +68,11 @@ d_o = zeros(num_steps,1);
 
 figure(plot_num)
 set(gcf,'position',([100,100,1200,600]),'color','w')
-    
-for idx=2:2
+
+l_start = 3;
+l_stop = 3;     % num_steps
+
+for idx=l_start:l_stop
 
     fprintf('\n');
     fprintf('Voltage Step, Focal Distance ${d_{o}}$, ${F_{num}}$, Focal Length, Error\n');
@@ -94,7 +97,7 @@ for idx=2:2
 %         end
 %     end
     
-    for jdx=1:20
+    for jdx=1:4
 
         [x, v, g, p, pso_stats, itr_cnt] = PSO(@get_coc, N, itr_max, v_max, x_lim, 1.7, c1, c2, 'constrict');
 
@@ -104,7 +107,7 @@ for idx=2:2
         fl(idx,1) = g(2,itr_cnt);
         d_o(idx,1) = g(3,itr_cnt);
 
-        fprintf('%s, %2.4f, %2.4f, %2.4f, %2.4f\n', lens_step{idx,1}, d_o(idx,1), f_num(idx,1), fl(idx,1), err);
+        fprintf('%02d, %s, %2.4f, %2.4f, %2.4f, %2.4f\n', jdx, lens_step{idx,1}, d_o(idx,1), f_num(idx,1), fl(idx,1), err);
         
         
         Dn = ((d_o(idx,1))*(fl(idx,1)*fl(idx,1))/(fl(idx,1)*fl(idx,1)+c_lim*f_num(idx,1)*(d_o(idx,1)-fl(idx,1))))/1000;
@@ -149,15 +152,18 @@ for idx=2:2
         title(strcat('Object Distance vs. Radius of Blur - Voltage Step:',32,lens_step{idx,1}), 'fontweight','bold', 'FontSize', 16);
         legend('Theoretical Blur Radius','Quantized Blur Radius','Measured Lens Blur Radius', 'location', 'southoutside', 'orientation','horizontal');
 
-        str = {sprintf('f-number \t \t = %2.2f', f_num(idx,1)),...
-               sprintf('focus distance \t = %2.2f', d_o(idx,1))};
-        annotation('textbox',[0.77,0.764,0.23,0.14],'String',str,'FitBoxToText','on','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w');
+        str = {sprintf('f-number = %2.2f', f_num(idx,1)),...
+               sprintf('focus distance = %2.2f', d_o(idx,1))};
+        delete(findall(gcf,'Tag','info'));
+        annotation('textbox',[0.76,0.81,0.2,0.09],'String',str,'FitBoxToText','off','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w','Tag','info');
         ax = gca;
         ax.Position = [0.05 0.16 0.93 0.77];
         drawnow;
         hold off;
     end
 end
+
+plot_num = plot_num + 1;
 
 return;
 
@@ -222,11 +228,13 @@ return
 
 %% test things
 
-%x1 = ones(1,100000)*2.92;
-x1 = [3.0:0.01:5.5];
-x3 = [100:0.1:600];
-x2 = ones(1,numel(x3))*9.88;
+% x1 = [x_lim(1,1):0.005:x_lim(1,2)];
+% x3 = [x_lim(3,1):0.2:x_lim(3,2)];
 
+x1 = [2.15:0.05:3.55];
+x3 = [50000:0.1:100000];
+
+x2 = ones(1,numel(x3))*9.88;
 
 err = [];
 for idx=1:numel(x1)
@@ -234,15 +242,19 @@ for idx=1:numel(x1)
     [err(idx,:)] = get_coc(x(:,:))';
 end
 
-figure
+figure(plot_num)
 surf(x3, x1, err)
 shading interp
 xlabel('d_o');
 ylabel('f_{num}');
-zlim([0,10]);
+zlim([0,300]);
+% zlim([0,20]);
+colormap(jet(100))
+view(90,90);
 
-min(err(:))
-max(err(:))
+fprintf('Min: %d\n', min(err(:)));
+fprintf('Max: %d\n', max(err(:)));
+plot_num = plot_num + 1;
 
 %% ----------------------------
 
