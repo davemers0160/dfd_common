@@ -13,26 +13,37 @@ commandwindow;
 
 %% Setup the lens and camera parameters
 px_size = 0.0048;               % pixel size (mm)
-fl = [9.88, 2.0];              % mm
-f_num = [2.9200, 1.0090];       % unitless 4.0090
-%d_o = [265000, 495];           % mm
-d_o = [26500000, 4950];           % mm
-range = [0.1:0.1:50.0]*1000;   % mm 
+
+
+% lens info for Microfluidic lens
+% fl = [9.88, 9.88];              % mm
+% f_num = [2.9200, 4.0090];       % unitless
+% d_o = [265000, 495];            % mm
+% range = [0:0.1:50.0]*1000;      % mm 
+
+% lens info for random lens
+fl = [9.88, 9.88];              % mm
+f_num = [4, 50];                % unitless
+d_o = [20000, 1000];            % mm
+range = [0:0.1:10.0]*1000;      % mm 
+
+
 
 %% run the parameters through the calc_blur_radius function and plot the results
 
 blur_radius = [];
-coc_near = [];
-coc_far = [];
+coc_near = {};
+coc_far = {};
+coc_max = [];
 
 for idx=1:numel(f_num) 
-    [blur_radius(idx,:)] = calc_blur_radius(d_o(idx), fl(idx), f_num(idx), range);  
+    [blur_radius(idx,:), coc_max(idx)] = calc_blur_radius(d_o(idx), fl(idx), f_num(idx), range);  
 end
 
 blur_diff = abs(blur_radius(1,:) - blur_radius(2,:));
 
-px_max = 14;
-%px = ceil(max(blur_radius(:))/px_size);
+%px_max = 14;
+px_max = ceil(max(max(coc_max),px_size*6)/px_size);
 y_axis_ticks = [0:px_size:px_size*px_max];
 y_axis_labels = num2str(y_axis_ticks'/px_size);
 
@@ -65,7 +76,7 @@ xtickformat('%2.1f');
 xlabel('Distance From Lens (m)', 'fontweight','bold','FontSize', 13);
 
 % Y-Axis
-y_plt_max = y_axis_ticks(end);
+y_plt_max = px_size*px_max;   %y_axis_ticks(end);
 y_plt_min = 0;
 ylim([y_plt_min, y_plt_max]);
 yticks(y_axis_ticks);
@@ -74,9 +85,9 @@ yticklabels(y_axis_labels);
 ylabel('Blur Radius (pixels)', 'fontweight','bold','FontSize', 13);
 
 title('Object Distance vs. Radius of Blur', 'fontweight','bold','FontSize', 16);
-legend('Blur Radius 1','Blur Radius 2', 'Blur Radius Difference', 'location', 'southeast');
+legend(strcat('Blur Radius: [', num2str(fl(1),'%2.1f,'), 32, num2str(f_num(1),'%2.3f'), ']', 32),strcat('Blur Radius: [', num2str(fl(2),'%2.1f,'), 32, num2str(f_num(2),'%2.3f'), ']', 32), 'Blur Radius Difference', 'location', 'southoutside', 'Orientation', 'horizontal');
 ax = gca;
-ax.Position = [0.07 0.12 0.91 0.81];
+ax.Position = [0.05 0.19 0.93 0.75];
 
 %print(plot_num, '-dpng', fullfile(save_location,'blur_radius2.png'));
 
