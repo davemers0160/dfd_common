@@ -29,6 +29,8 @@ data_params = parse_input_parameters(fullfile(data_path, data_file));
 
 % row 1 is the pixel blur size
 range = str2double({data_params{1}{2:end}})*1000;
+limits =[0.1, max(range)];  % m
+px_size = 0.0048;                       % pixel size (mm)
  
 data_params(1) = [];
 
@@ -48,19 +50,15 @@ end
 %% match the rw lens value to the theoretical
 
 %f_num, focal length, d_o
-x_lim = [0.1,4.0; 9.88,9.88; 250000,260000];
-v_max = [-0.05, 0.05; -0.0, 0.0; -5, 5];
-itr_max = 400;
-N = 4000;
+x_lim = [1.0,5.0; 9.88,9.88; 14000,16000];
+v_max = [-0.02, 0.02; -0.0, 0.0; -5, 5];
+itr_max = 600;
+N = 5000;
 c1 = 2.1;
 c2 = 2.1;
 
-px_size = 0.0048;                       % pixel size (mm)
 c_lim = 1*px_size;
 %d_o = 1.2*1000;                         % mm
-
-limits =[0.1, max(range)];  % m
-
 
 f_num = zeros(num_steps,1);
 fl = zeros(num_steps,1);
@@ -69,8 +67,8 @@ d_o = zeros(num_steps,1);
 figure(plot_num)
 set(gcf,'position',([100,100,1200,600]),'color','w')
 
-l_start = 3;
-l_stop = 3;     % num_steps
+l_start = 1;
+l_stop = 2;     % num_steps
 
 for idx=l_start:l_stop
 
@@ -153,7 +151,7 @@ for idx=l_start:l_stop
         legend('Theoretical Blur Radius','Quantized Blur Radius','Measured Lens Blur Radius', 'location', 'southoutside', 'orientation','horizontal');
 
         str = {sprintf('f-number = %2.2f', f_num(idx,1)),...
-               sprintf('focus distance = %2.2f', d_o(idx,1))};
+               sprintf('focus distance = %2.3fm', d_o(idx,1)/1000)};
         delete(findall(gcf,'Tag','info'));
         annotation('textbox',[0.76,0.81,0.2,0.09],'String',str,'FitBoxToText','off','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w','Tag','info');
         ax = gca;
@@ -169,14 +167,26 @@ return;
 
 %% Setup the lens and camera parameters
 
-Dn = ((d_o)*(fl*fl)/(fl*fl+c_lim*f_num*(d_o-fl)))/1000;
-Df = ((d_o)*(fl*fl)/(fl*fl-c_lim*f_num*(d_o-fl)))/1000;
+% Dn = ((d_o)*(fl*fl)/(fl*fl+c_lim*f_num*(d_o-fl)))/1000;
+% Df = ((d_o)*(fl*fl)/(fl*fl-c_lim*f_num*(d_o-fl)))/1000;
+% 
+% DOF = Df-Dn;
 
-DOF = Df-Dn;
+fl2 = 9.88;
 
-[S_range, CoC, CoC_max] = blurCalc(f_num, fl, d_o, limits);
+% 141
+% f_num2 = 3.9550; % 3.9550, 3.7360;
+% d_o2 = 499.8000; % 499.8000, 526.2000 
+
+% 129
+f_num2 = 2.8940;
+d_o2 = 126658.0000; 
+
+[S_range, CoC, CoC_max] = blurCalc(f_num2, fl2, d_o2, limits);
 px = ceil(CoC/px_size);
 
+l_start = 1;
+pixel = lens_pixel{l_start,1}; 
 
 %% Plot the main blur radius curve
 save_location = 'D:\IUPUI\PhD\Images\Camera';
@@ -213,12 +223,13 @@ yticks(y_axis_ticks);
 yticklabels(y_axis_labels);
 ylabel('Blur Radius (pixels)', 'fontweight','bold','FontSize', 13);
 
-title(strcat('Object Distance vs. Radius of Blur - Voltage Step:',32,lens_step{step_index,1}), 'fontweight','bold', 'FontSize', 16);
+title(strcat('Object Distance vs. Radius of Blur - Voltage Step:',32,lens_step{l_start,1}), 'fontweight','bold', 'FontSize', 16);
 legend('Theoretical Blur Radius','Quantized Blur Radius','Lens Blur Radius', 'location', 'southoutside', 'orientation','horizontal');
 
-str = {sprintf('f number      = %2.2f', f_num),...
-       sprintf('focal length = %2.2f', fl)};
-annotation('textbox',[0.825,0.764,0.23,0.14],'String',str,'FitBoxToText','on','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w');
+str = {sprintf('f-number = %2.2f', f_num2),...
+       sprintf('focal distance = %2.3fm', d_o2/1000)};
+delete(findall(gcf,'Tag','info'));
+annotation('textbox',[0.76,0.81,0.2,0.09],'String',str,'FitBoxToText','off','fontweight','bold', 'FontSize', 12, 'BackGroundColor','w','Tag','info');
 ax = gca;
 ax.Position = [0.05 0.16 0.93 0.77];
 
@@ -230,10 +241,11 @@ return
 
 % x1 = [x_lim(1,1):0.005:x_lim(1,2)];
 % x3 = [x_lim(3,1):0.2:x_lim(3,2)];
+pixel = lens_pixel{2,1};
 
-%x1 = [2.3:0.1:3.4];
-x1 = [2.5:0.01:3.0];
-x3 = [270000:1.0:300000];
+%x1 = [2.3:0.1:3.4];    1472725.7
+x1 = [0.20:0.010:5.0];
+x3 = [100.0:0.005:600];
 
 x2 = ones(1,numel(x3))*9.88;
 
@@ -245,19 +257,25 @@ for idx=1:numel(x1)
 end
 toc
 
+
+me = 51;
+max_err = max(err(:));
+err(err>me) = me;
+
 figure(plot_num)
 surf(x3, x1, err)
 shading interp
 xlabel('d_o');
 ylabel('f_{num}');
-zlim([0,50]);
+zlim([0,me-1]);
 % zlim([0,20]);
-colormap(jet(100));
+colormap(jet(me));
 view(90,90);
 
+fprintf('f-num: %2.3f - %2.3f\n', x1(1), x1(end));
 fprintf('Range: %06d - %06d\n', x3(1), x3(end));
 fprintf('Min: %d\n', min(err(:)));
-fprintf('Max: %d\n', max(err(:)));
+fprintf('Max: %d\n\n', max_err);
 plot_num = plot_num + 1;
 
 %% ----------------------------
