@@ -13,9 +13,9 @@ plot_num = 1;
 px_size = 0.0048;       % pixel size (mm)
 fl = 9.6;            % mm
 f_num = 3.7;        % unitless
-d_o = 1.0*1000;     % mm
+d_o = 1.0*1000*1000;     % mm
 
-limits =[0.1, 5];  % m
+limits =[100, 1000];  % m
 
 
 
