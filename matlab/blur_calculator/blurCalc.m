@@ -1,7 +1,7 @@
-function [d_range, CoC, CoC_max] = blurCalc(f_num, f, d_o, limits)
+function [d_range, CoC, CoC_max] = blurCalc(f_num, f, d_o, limits, d_step)
 
     % set the range step
-    d_step = 100;
+    %d_step = 100;
     
     d_far = d_o:d_step:(limits(2));
     d_near = limits(1):d_step:d_o-d_step;
