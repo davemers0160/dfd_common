@@ -1,10 +1,13 @@
 import numpy as np
+import math
 
 def coc_calc(f_num, f, d_o, limits, step):
    
     CoC_max = (f*f/(f_num*(d_o-f)))
 
-    r = np.arange(limits[0], limits[1], step)
+    start = max(limits[0],step)
+
+    r = np.arange(start, limits[1], step)
     CoC = np.zeros(r.shape, dtype=float, order='C')
     tl = (d_o*f*f)/(f_num*(d_o-f))
     
