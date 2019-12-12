@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import cv2 as cv
+#import cv2 as cv
 import bokeh
 from bokeh.io import curdoc, output_file
 from bokeh.models import ColumnDataSource, Spinner, Range1d, Slider, Legend
@@ -27,12 +27,12 @@ source = ColumnDataSource(data=dict(x=[], coc=[], color=[], legend_label=[]))
 px_size = Spinner(title="pixel size (um)", low=0.001, high=10.0, step=0.001, value=1.55, width=100)
 f_num = Spinner(title="f number", low=0.01, high=100.0, step=0.01, value=2.0, width=100)
 f = Spinner(title="focal length (mm)", low=0.1, high=500, step=0.1, value=55, width=100)
-do_1 = Slider(title="focus point 1 (m):", start=1, end=20000, step=1, value=100, width=1100, callback_policy="mouseup", callback_throttle=50)
-do_2 = Slider(title="focus point 2 (m):", start=1, end=20000, step=1, value=200, width=1100, callback_policy="mouseup")
+do_1 = Slider(title="focus point 1 (m):", start=1, end=20000, step=1, value=100, width=1500, callback_policy="mouseup", callback_throttle=50)
+do_2 = Slider(title="focus point 2 (m):", start=1, end=20000, step=1, value=200, width=1500, callback_policy="mouseup")
 x_spin = Spinner(title="max x", low=limits[0], high=limits[1], step=1, value=1000, width=100)
 y_spin = Spinner(title="max y", low=limits[0], high=limits[1], step=1, value=50, width=100)
 
-coc_plot = figure(plot_height=500, plot_width=1000, title="Quantized Circles of Confusion")
+coc_plot = figure(plot_height=600, plot_width=1400, title="Quantized Circles of Confusion")
 l1=coc_plot.multi_line(xs='x', ys='coc', source=source, line_width=2, color='color', legend='legend_label')
 # coc_plot.legend.title = "CoCs"
 # coc_plot.line('x', 'coc1', source=source, line_width=2, color='blue', legend=legend_label[0])
@@ -79,8 +79,8 @@ layout = column(row(inputs, coc_plot), do_1, do_2)
 
 show(layout)
 
-# doc = curdoc()
-# doc.title = "Blur Calculator"
-# doc.add_root(layout)
+doc = curdoc()
+doc.title = "Blur Calculator"
+doc.add_root(layout)
 
-output_file("d:/test.html", title='Bokeh Plot', mode='cdn', root_dir=None)
+# output_file("d:/test.html", title='Bokeh Plot', mode='cdn', root_dir=None)
