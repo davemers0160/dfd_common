@@ -71,7 +71,7 @@ for w in [px_size, f_num, f, do_1, do_2, x_spin, y_spin]:
     w.on_change('value', update_plot)
 
 
-update_plot(1,1,1)
+update_plot(1, 1, 1)
 
 # layout = column([row([x_spin,y_spin]), blur_plot])
 inputs = column(px_size, f_num, f, x_spin, y_spin)
@@ -79,8 +79,8 @@ layout = column(row(inputs, coc_plot), do_1, do_2)
 
 show(layout)
 
-# doc = curdoc()
-# doc.title = "Blur Calculator"
-# doc.add_root(layout)
+doc = curdoc()
+doc.title = "Blur Calculator"
+doc.add_root(layout)
 
-output_file("d:/test.html", title='Bokeh Plot', mode='cdn', root_dir=None)
+# output_file("d:/test.html", title='Bokeh Plot', mode='cdn', root_dir=None)
