@@ -252,7 +252,4 @@ DfD_Analysis/.vscode/launch.json
 *.gz
 
 
-
-
-
-*.html
+.ipynb_checkpoints/
