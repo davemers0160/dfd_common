@@ -3,7 +3,7 @@ import math
 #import cv2 as cv
 import bokeh
 from bokeh.io import curdoc, output_file
-from bokeh.models import ColumnDataSource, Spinner, Range1d, Slider, Legend, CustomJS
+from bokeh.models import ColumnDataSource, Spinner, Range1d, Slider, Legend, CustomJS, HoverTool
 from bokeh.plotting import figure, show, output_file
 from bokeh.layouts import column, row, Spacer
 
@@ -14,13 +14,18 @@ from coc_calc import coc_calc
 # f = 10
 # d_o1 = 2
 # d_o2 = 5
+blur_img_w = 200
+blur_img_h = 200
+blur_alpha = np.full((blur_img_h, blur_img_w), 255, dtype=np.uint8)
+blur_alpha[0:99, :] = 0
 limits = [0, 10000000]
 step = 1000
 # px_size = 0.00155
 
 legend_label = ["fp 1", "fp 2", "CoC Difference"]
 
-source = ColumnDataSource(data=dict(x=[], coc=[], color=[], legend_label=[]))
+source = ColumnDataSource(data=dict(x=[], coc=[],  color=[], legend_label=[]))
+b_source = ColumnDataSource(data=dict(b1=[]))
 # source = ColumnDataSource(data=dict(x=[], coc=[], color=['blue', 'green', 'black'], legend_label=["fp 1", "fp 2", "CoC Difference"]))
 # source = ColumnDataSource(data=dict(x=[], coc1=[], coc2=[], coc_diff=[]))
 
@@ -32,6 +37,16 @@ do_1 = Slider(title="focus point 1 (m):", start=1, end=20000, step=1, value=309,
 do_2 = Slider(title="focus point 2 (m):", start=1, end=20000, step=1, value=10000, width=1400, callback_policy="mouseup")
 x_spin = Spinner(title="max x", low=limits[0], high=limits[1], step=1, value=1000, width=100)
 y_spin = Spinner(title="max y", low=limits[0], high=limits[1], step=1, value=40, width=100)
+
+fp1_b = figure(plot_height=200, plot_width=200, title="Focal Point 1", toolbar_location=None)
+fp1_b.image(image="b1", x=0, y=0, dw=200, dh=200, global_alpha=1.0, dilate=False, palette="Greys256", source=b_source)
+fp1_b.axis.visible = False
+fp1_b.grid.visible = False
+fp1_b.x_range.range_padding = 0
+fp1_b.y_range.range_padding = 0
+fp1_b.toolbar
+
+ht = HoverTool(tooltips=[("Range: ", "$x"),  ("Blur Radius: ", "$y{0,0}")], point_policy="snap_to_data", mode="mouse")
 
 coc_plot = figure(plot_height=550, plot_width=1300, title="Quantized Circles of Confusion")
 l1=coc_plot.multi_line(xs='x', ys='coc', source=source, line_width=2, color='color', legend='legend_label')
@@ -47,6 +62,7 @@ coc_plot.y_range = Range1d(start=0, end=y_spin.value)
 # coc_plot.legend[0].location = (900, 200)
 # legend = Legend(items=[(("fp 1", "fp 2", "CoC Difference"), [l1])], location=(0, -60))
 # coc_plot.add_layout(legend, 'right')
+coc_plot.add_tools(ht)
 
 
 # Custom JS code to update the plots
@@ -132,6 +148,7 @@ def update_plot(attr, old, new):
 
     source.data = dict(x=[r, r, r], coc=[q_coc1, q_coc2, q_coc_diff], color=['blue', 'green', 'black'], legend_label=["fp 1", "fp 2", "CoC Difference"])
     # source.data = dict(x=[r], coc1=[q_coc1], coc2=[q_coc2], coc_diff=[q_coc_diff])
+    b_source.data = dict(b1=[blur_alpha])
 
     coc_plot.x_range.end = x_spin.value
     coc_plot.y_range.end = y_spin.value
@@ -146,6 +163,7 @@ update_plot(1, 1, 1)
 
 # layout = column([row([x_spin,y_spin]), blur_plot])
 inputs = column(px_size, f_num, f, x_spin, y_spin)
+blur_imgs = column(row([Spacer(width=20, height=20), fp1_b]), row([Spacer(width=20, height=20), fp1_b]))
 layout = column(row(inputs, coc_plot), do_1, do_2)
 
 show(layout)
