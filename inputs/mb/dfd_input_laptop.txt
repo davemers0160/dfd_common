@@ -16,7 +16,7 @@
 #             goes from outer most to the inner most layer.
 #
 # Scenario Name
-v14a_32_test_
+v14a_32_test2_
 # Stopping criteria
 0.20, 400000
 # Training/Testing input files

@@ -1,6 +1,8 @@
 #ifndef NET_DEFINITION_H
 #define NET_DEFINITION_H
 
+#include <cstdint>
+#include <array>
 
 // dlib includes
 #include "dlib/dnn.h"
@@ -13,6 +15,8 @@
 
 extern const uint32_t img_depth = 6;
 extern const uint32_t secondary = 1;
+
+const std::array<float, img_depth> avg_color{ 107.1, 111.9, 132.8, 107.1, 111.9, 132.8 };
 
 // --------------------------------- Conv Filter Setup ------------------------------------
 template <long num_filters, typename SUBNET> using con2d = dlib::con<num_filters, 2, 2, 2, 2, SUBNET>;
@@ -137,7 +141,7 @@ using dfd_net_type = dlib::loss_multiclass_log_per_pixel<
 	
     dtago1<dfd_res_33<256, 256, cbp3_blk<256, 
     //dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>>
-    dlib::input_dfd_array<img_depth>
+    dlib::input_dfd_array<uint16_t, img_depth>
     >>> >>> >>>> > >>>> > >>>>> >;
 
     
@@ -167,7 +171,7 @@ using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
 // ----------------------------------------------------------------------------------------
 
 template <typename net_type>
-void config_net(net_type &net, std::vector<uint32_t> params)
+void config_net(net_type &net, std::array<float, img_depth> avg_color, std::vector<uint32_t> params)
 {
 
     net = net_type(dlib::num_con_outputs(params[0]),
@@ -187,7 +191,12 @@ void config_net(net_type &net, std::vector<uint32_t> params)
         dlib::num_con_outputs(params[14]),
         dlib::num_con_outputs(params[15]),
         dlib::num_con_outputs(params[16]),
-        dlib::num_con_outputs(params[17]));
+        dlib::num_con_outputs(params[17])//, 
+        //dlib::input_dfd_array<uint16_t, img_depth>(30.2)
+    );
+
+    dlib::layer<net_type::num_layers - 1>(net).set_avg_colors(avg_color);
+
 
 }   // end of config_net
 
