@@ -114,20 +114,20 @@ void load_dfd_data(
         switch (img_depth)
         {
             case 1:
-                bgr2gray(f, tf);
-                bgr2gray(d1, td);
+                rgb2gray(f, tf);
+                rgb2gray(d1, td);
                 
                 t[0] = (td+256)-tf;              
                 break;
             
             case 2:
-                bgr2gray(f, t[0]);
-                bgr2gray(d1, t[1]);
+                rgb2gray(f, t[0]);
+                rgb2gray(d1, t[1]);
                 break;
                 
             case 3:
-                bgr2gray(f, t[0]);
-                bgr2gray(d1, t[1]);
+                rgb2gray(f, t[0]);
+                rgb2gray(d1, t[1]);
 
                 switch(secondary)
                 {
