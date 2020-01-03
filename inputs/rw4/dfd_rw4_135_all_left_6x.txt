@@ -1,6 +1,6 @@
 # Full data listing for the real world dataset
 # Data Directory: 
-Test_Data/rw4/, DfD/data/rw4/, Projects/rw_data/
+d:/IUPUI/Test_Data/rw4/, DfD/data/rw4/, Projects/rw_data/
 # Data: 
 #------------------------------------------------------
 k00/left/exp_10/image_135_10.00.png, k00/left/exp_10/image_127_10.00.png, k00/lidar/lidar_rng_left_00000_8bit_x6.png

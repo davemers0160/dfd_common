@@ -5,7 +5,7 @@
 # Comments in this file should start with '#'
 #
 # Data Directory - must have the $HOME environment variable set to the data location
-Test_Data/Middlebury_Images_Third/, DfD/data/, DfD/data/
+D:/IUPUI/Test_Data/Middlebury_Images_Third/, DfD/data/, DfD/data/
 #
 # Data Files
 Aloe/Illum1/Exp0/view1.png, Aloe/Illum1/Exp0/view1_lin_0.32_2.88.png, Aloe/disp1.png
