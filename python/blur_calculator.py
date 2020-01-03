@@ -1,7 +1,8 @@
 import numpy as np
 import math
 #import cv2 as cv
-import bokeh
+from bokeh import events
+# import bokeh
 from bokeh.io import curdoc, output_file
 from bokeh.models import ColumnDataSource, Spinner, Range1d, Slider, Legend, CustomJS, HoverTool
 from bokeh.plotting import figure, show, output_file
@@ -18,6 +19,7 @@ blur_img_w = 200
 blur_img_h = 200
 blur_alpha = np.full((blur_img_h, blur_img_w), 255, dtype=np.uint8)
 blur_alpha[0:99, :] = 0
+
 limits = [0, 10000000]
 step = 1000
 # px_size = 0.00155
@@ -25,7 +27,7 @@ step = 1000
 legend_label = ["fp 1", "fp 2", "CoC Difference"]
 
 source = ColumnDataSource(data=dict(x=[], coc=[],  color=[], legend_label=[]))
-b_source = ColumnDataSource(data=dict(b1=[]))
+b_source = ColumnDataSource(data=dict(b1=[], b2=[]))
 # source = ColumnDataSource(data=dict(x=[], coc=[], color=['blue', 'green', 'black'], legend_label=["fp 1", "fp 2", "CoC Difference"]))
 # source = ColumnDataSource(data=dict(x=[], coc1=[], coc2=[], coc_diff=[]))
 
@@ -59,10 +61,64 @@ coc_plot.yaxis.axis_label = "Pixel Radius"
 coc_plot.axis.axis_label_text_font_style = "bold"
 coc_plot.x_range = Range1d(start=0, end=x_spin.value)
 coc_plot.y_range = Range1d(start=0, end=y_spin.value)
-# coc_plot.legend[0].location = (900, 200)
+# coc_plot.legend[0].location = (900, 200))
 # legend = Legend(items=[(("fp 1", "fp 2", "CoC Difference"), [l1])], location=(0, -60))
 # coc_plot.add_layout(legend, 'right')
 coc_plot.add_tools(ht)
+
+
+
+b1_data = np.full((1, blur_img_h * blur_img_w), 255, dtype=np.uint8)
+b1_data[:, 0:(blur_img_w * 99)] = 0
+tmp_dict = dict(source=source, b_source=b_source, b1_d=b1_data)
+tmp_cb = CustomJS(args=tmp_dict, code="""
+    var data = source.data;
+    
+    //var b1_data = [];
+    //Object.assign(b1_data, b1_d);
+    var b1_data = JSON.parse(JSON.stringify(b1_d));
+    
+    //var b1_data = {...b1_d};
+    //var b2_data = b_source.data['b2'];
+    
+    var stride = 200;
+    var start = 10*stride;  
+    var stop = 191*stride;
+    
+    x = Math.floor(cb_obj['x']);
+
+    var b1 = data['coc'][0][x];
+    var b2 = data['coc'][1][x];
+    
+    console.log(b1);
+    console.log(b2);  
+    
+    for(var b=0; b<b1; b++)
+    {
+        for(var idx=start; idx<stop; idx++)
+        {
+            b1_data[0][idx] = 0.333333 * (b1_d[0][idx-stride] + b1_d[0][idx] + b1_d[0][idx+stride]);
+            //for(var c=1; c<199; c++)
+            //{
+                //var p = b_source.data['b1']
+                //b1_data[r][c] = Math.floor(0.111111*(b_source.data['b1'][r-1][c-1] + b_source.data['b1'][r-1][c] + b_source.data['b1'][r-1][c+1] + 
+                //    b_source.data['b1'][r][c-1] + b_source.data['b1'][r][c] + b_source.data['b1'][r][c+1] + 
+                //    b_source.data['b1'][r+1][c-1] + b_source.data['b1'][r+1][c] + b_source.data['b1'][r+1][c+1]));
+            //}
+        }
+        
+        for(var idx=start; idx<stop; idx++)
+        {
+            b1_data[0][idx] = Math.floor(0.333333 * (b1_d[0][idx-1] + b1_d[0][idx] + b1_d[0][idx+1]));
+        }
+    }
+    
+    
+    b_source.data['b1'] = [];
+    b_source.data['b1'].push(new Uint8Array(b1_data[0]));
+    b_source.change.emit();
+    
+    """)
 
 
 # Custom JS code to update the plots
@@ -148,7 +204,7 @@ def update_plot(attr, old, new):
 
     source.data = dict(x=[r, r, r], coc=[q_coc1, q_coc2, q_coc_diff], color=['blue', 'green', 'black'], legend_label=["fp 1", "fp 2", "CoC Difference"])
     # source.data = dict(x=[r], coc1=[q_coc1], coc2=[q_coc2], coc_diff=[q_coc_diff])
-    b_source.data = dict(b1=[blur_alpha])
+    b_source.data = dict(b1=[blur_alpha], b2=[blur_alpha])
 
     coc_plot.x_range.end = x_spin.value
     coc_plot.y_range.end = y_spin.value
@@ -158,6 +214,8 @@ for w in [px_size, f_num, f, do_1, do_2, x_spin, y_spin]:
     # w.on_change('value', update_plot)
     w.js_on_change('value', update_plot_callback)
 
+# coc_plot.js_on_event(events.Tap, tmp_cb)
+# coc_plot.js_on_event(events.Tap, blur_cb)
 
 update_plot(1, 1, 1)
 
