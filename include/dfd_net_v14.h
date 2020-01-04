@@ -171,7 +171,7 @@ using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
 // ----------------------------------------------------------------------------------------
 
 template <typename net_type>
-void config_net(net_type &net, std::array<float, img_depth> avg_color, std::vector<uint32_t> params)
+void config_net(net_type &net, std::array<float, img_depth> &avg_color, std::vector<uint32_t> &params)
 {
 
     net = net_type(dlib::num_con_outputs(params[0]),

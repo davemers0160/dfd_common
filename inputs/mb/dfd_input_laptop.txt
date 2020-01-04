@@ -31,6 +31,10 @@ D:/Projects/dfd_common/inputs/mb/dfd_test_data_one2.txt
 # Crop Info: Number of crops, train_crop_size (h,w)], eval_crop_size (h,w), scale (h,w)
 10, 32,32, 352,352, 1,1
 
+# average colors per channel
+# 98.7366, 98.7809
+110.9551, 98.1071, 69.9262, 111.0131, 98.1506, 69.9516 
+
 # v14
 #a 
 256, 128,128,128, 128, 256,256,256, 256, 512,512, 512, 256,256, 256, 128,128,128
