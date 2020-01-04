@@ -11,7 +11,7 @@
 //#include "ssim_loss.h"
 //#include "l1_loss.h"
 #include "dfd_dnn_input.h"
-#include "gorgon_capture.h"
+//#include "gorgon_capture.h"
 
 extern const uint32_t img_depth = 6;
 extern const uint32_t secondary = 1;
