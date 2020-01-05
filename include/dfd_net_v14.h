@@ -171,10 +171,10 @@ using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
 // ----------------------------------------------------------------------------------------
 
 template <typename net_type>
-void config_net(net_type &net, std::array<float, img_depth> &avg_color, std::vector<uint32_t> &params)
+//void config_net(net_type& net, std::array<float, img_depth>& avg_color, std::vector<uint32_t>& params)
+net_type config_net(std::array<float, img_depth>& avg_color, const std::vector<uint32_t>& params)
 {
-
-    net = net_type(dlib::num_con_outputs(params[0]),
+    net_type net(dlib::num_con_outputs(256),
         dlib::num_con_outputs(params[1]),
         dlib::num_con_outputs(params[2]),
         dlib::num_con_outputs(params[3]),
@@ -191,12 +191,12 @@ void config_net(net_type &net, std::array<float, img_depth> &avg_color, std::vec
         dlib::num_con_outputs(params[14]),
         dlib::num_con_outputs(params[15]),
         dlib::num_con_outputs(params[16]),
-        dlib::num_con_outputs(params[17])//, 
-        //dlib::input_dfd_array<uint16_t, img_depth>(30.2)
+        dlib::num_con_outputs(params[17]) 
     );
 
     dlib::layer<net_type::num_layers - 1>(net).set_avg_colors(avg_color);
 
+    return net;
 
 }   // end of config_net
 
