@@ -20,10 +20,10 @@ namespace dlib
     template <typename T, size_t K>
     class input_dfd_array
     {
-	public:
-		typedef std::array<matrix<T>, K> input_type;
-		
-		input_dfd_array() 
+    public:
+        typedef std::array<matrix<T>, K> input_type;
+        
+        input_dfd_array() 
         {
             avg_color.fill(128.0);  // fill in the average color with 128
             set_scale(1.0 / 256.0);
@@ -32,7 +32,7 @@ namespace dlib
         //input_dfd_array(std::array<float, K> avg_color_)
    //     input_dfd_array(float avg_color_)
    //     {
-			////std::copy(std::begin(avg_color_), std::end(avg_color_), std::begin(avg_color));
+            ////std::copy(std::begin(avg_color_), std::end(avg_color_), std::begin(avg_color));
    //         //for (uint64_t idx = 0; idx < K; ++idx)
    //         //    avg_color[idx] = avg_color_[idx];
    //         avg_color[0] = avg_color_;
@@ -43,7 +43,7 @@ namespace dlib
         {
             std::copy(std::begin(avg_color_), std::end(avg_color_), std::begin(avg_color));
         }
-		
+
         void set_scale(float scale_)
         {
             scale = scale_;
@@ -106,13 +106,13 @@ namespace dlib
                 }
             }
 
-        }		
-		
+        }
+
         friend void serialize(const input_dfd_array& item, std::ostream& out)
         {
             serialize("input_dfd_array", out);
-			for (size_t k = 0; k < K; ++k)
-				serialize(item.avg_color[k], out);
+            for (size_t k = 0; k < K; ++k)
+                serialize(item.avg_color[k], out);
             serialize(item.scale, out);
         }
 
@@ -122,39 +122,39 @@ namespace dlib
             deserialize(version, in);
             if (version != "input_dfd_array")
                 throw serialization_error("Unexpected version found while deserializing dlib::input_dfd_array.");
-			for (size_t k = 0; k < K; ++k)
-				deserialize(item.avg_color[k], in);	
+            for (size_t k = 0; k < K; ++k)
+                deserialize(item.avg_color[k], in);	
             deserialize(item.scale, in);
         }
 
         friend std::ostream& operator<<(std::ostream& out, const input_dfd_array& item)
         {
             out << "input_dfd_array(";
-			std::string tmp = "";
-			for (size_t k = 0; k < K-1; ++k)
-				out << item.avg_color[k] << ",";
-			out << item.avg_color[K-1] << ") ";
-			out << "array_depth=" << K << ", scale=" << item.scale;
+            std::string tmp = "";
+            for (size_t k = 0; k < K-1; ++k)
+                out << item.avg_color[k] << ",";
+            out << item.avg_color[K-1] << ") ";
+            out << "array_depth=" << K << ", scale=" << item.scale;
             return out;
         }
 
         friend void to_xml(const input_dfd_array& item, std::ostream& out)
         {
-			out << "<input_dfd_array ";			
-			for (size_t k = 0; k < K-1; ++k)
-				out << "c" << k << "='" << item.avg_color[k] << "' ";
+            out << "<input_dfd_array ";			
+            for (size_t k = 0; k < K-1; ++k)
+                out << "c" << k << "='" << item.avg_color[k] << "' ";
             out << "c" << K - 1 << "='" << item.avg_color[K - 1] << "' ";
             out << "scale='" << item.scale;
             out << "'/>";
-        }		
-		
-	private:
+        }
+
+    private:
         std::array<float, K> avg_color;
 
         float scale;
-		
-	};	// end of class
 
-}	// end of namespace
+    };  // end of class
+
+}   // end of namespace
 
 #endif	// DLIB_DNN_DFD_INPUT_ARRAY_H_
