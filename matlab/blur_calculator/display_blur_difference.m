@@ -14,13 +14,16 @@ plot_num = 1;
 b1 = 10;
 b2 = 31;
 
-% base image
-base_img = cat(1, zeros(150,300), 255*ones(200,300));
 
-box_blur = (1/9)*[1,1,1; 1,1,1; 1,1,1];
+
+% base image
+base_img = cat(1, zeros(100,100), 255*ones(100,100));
+
+box_blur = (1/3)*[1; 1; 1];
 
 figure(plot_num)
-image(base_img(50:249,:))
+% image(base_img(51:250,:))
+image(base_img)
 colormap(gray(256))
 plot_num = plot_num + 1;
 
@@ -29,21 +32,21 @@ plot_num = plot_num + 1;
 b1_img = base_img;
 b2_img = base_img;
 
-while(b1_img(150-b1, 100) < 1)
+while(b1_img(ceil(100-b1/2), 100) < 1)
 
     b1_img = (conv2(b1_img, box_blur, 'same'));
     
 end
 
-b1_img = floor(b1_img(50:249, 51:250));
+b1_img = floor(b1_img(51:250, 51:250));
 
-while(b2_img(150-b2, 100) < 1)
+while(b2_img(ceil(100-b2/2), 100) < 1)
 
     b2_img = (conv2(b2_img, box_blur, 'same'));
     
 end
 
-b2_img = floor(b2_img(50:249, 51:250));
+b2_img = floor(b2_img(51:250, 51:250));
 
 figure(plot_num)
 hold on
