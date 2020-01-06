@@ -141,7 +141,7 @@ using dfd_net_type = dlib::loss_multiclass_log_per_pixel<
 	
     dtago1<dfd_res_33<256, 256, cbp3_blk<256, 
     //dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>>
-    dlib::input_dfd_array<uint16_t, img_depth>
+    dlib::tag10<dlib::input_dfd_array<uint16_t, img_depth>>
     >>> >>> >>>> > >>>> > >>>>> >;
 
     
@@ -159,12 +159,11 @@ using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
     
     dtago2<adfd_res_33<512,512,con2d<512,
 	
-    dtago1<adfd_res_33<256, 256, acbp3_blk<256, dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>
-    >>>>>>>>>>>>>>>>>>>>>>>;
-    
-    
-    
-    
+    dtago1<adfd_res_33<256, 256, acbp3_blk<256, 
+    //dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>
+    dlib::tag10<dlib::input_dfd_array<uint16_t, img_depth>>
+    >>> >>> >>>> > >>>> > >>>>> >;
+ 
 
 // ----------------------------------------------------------------------------------------
 // Configuration function
@@ -172,26 +171,26 @@ using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
 
 template <typename net_type>
 //void config_net(net_type& net, std::array<float, img_depth>& avg_color, std::vector<uint32_t>& params)
-net_type config_net(std::array<float, img_depth>& avg_color, const std::vector<uint32_t>& params)
+net_type config_net(std::array<float, img_depth>& avg_color, std::vector<uint32_t>& fn)
 {
     net_type net(dlib::num_con_outputs(256),
-        dlib::num_con_outputs(params[1]),
-        dlib::num_con_outputs(params[2]),
-        dlib::num_con_outputs(params[3]),
-        dlib::num_con_outputs(params[4]),
-        dlib::num_con_outputs(params[5]),
-        dlib::num_con_outputs(params[6]),
-        dlib::num_con_outputs(params[7]),
-        dlib::num_con_outputs(params[8]),
-        dlib::num_con_outputs(params[9]),
-        dlib::num_con_outputs(params[10]),
-        dlib::num_con_outputs(params[11]),
-        dlib::num_con_outputs(params[12]),
-        dlib::num_con_outputs(params[13]),
-        dlib::num_con_outputs(params[14]),
-        dlib::num_con_outputs(params[15]),
-        dlib::num_con_outputs(params[16]),
-        dlib::num_con_outputs(params[17]) 
+        dlib::num_con_outputs(fn[1]),
+        dlib::num_con_outputs(fn[2]),
+        dlib::num_con_outputs(fn[3]),
+        dlib::num_con_outputs(fn[4]),
+        dlib::num_con_outputs(fn[5]),
+        dlib::num_con_outputs(fn[6]),
+        dlib::num_con_outputs(fn[7]),
+        dlib::num_con_outputs(fn[8]),
+        dlib::num_con_outputs(fn[9]),
+        dlib::num_con_outputs(fn[10]),
+        dlib::num_con_outputs(fn[11]),
+        dlib::num_con_outputs(fn[12]),
+        dlib::num_con_outputs(fn[13]),
+        dlib::num_con_outputs(fn[14]),
+        dlib::num_con_outputs(fn[15]),
+        dlib::num_con_outputs(fn[16]),
+        dlib::num_con_outputs(fn[17])
     );
 
     dlib::layer<net_type::num_layers - 1>(net).set_avg_colors(avg_color);
