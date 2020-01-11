@@ -33,7 +33,7 @@ b_source = ColumnDataSource(data=dict(b1=[], b2=[]))
 
 # setup the inputs
 px_size = Spinner(title="pixel size (um)", low=0.001, high=10.0, step=0.001, value=1.55, width=100)
-f_num = Spinner(title="f number", low=0.01, high=100.0, step=0.01, value=2.35, width=100)
+f_num = Spinner(title="f number", low=0.01, high=100.0, step=0.01, value=2.0, width=100)
 f = Spinner(title="focal length (mm)", low=0.1, high=500, step=0.1, value=200, width=100)
 do_1 = Slider(title="focus point 1 (m):", start=1, end=20000, step=1, value=309, width=1400, callback_policy="mouseup", callback_throttle=50)
 do_2 = Slider(title="focus point 2 (m):", start=1, end=20000, step=1, value=10000, width=1400, callback_policy="mouseup")
@@ -139,8 +139,6 @@ update_plot_callback = CustomJS(args=cb_dict, code="""
     var coc2 = [];
     var coc_diff = [];
     
-    console.log(f_num.value);
-
     var t1 = (d1*f.value*f.value)/(f_num.value*(d1-f.value));
     var t2 = (d2*f.value*f.value)/(f_num.value*(d2-f.value));
     
