@@ -13,8 +13,8 @@ plot_num = 1;
 
 color = {'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'white'};
 
-img_w = 600;
-img_h = 600;
+img_w = 300;
+img_h = 300;
 
 % x_min,x_max; y_min,y_max; min_r,max_r
 circle = [1,img_w; 1,img_h; 20,40];
@@ -31,8 +31,7 @@ for idx=1:800
     T = randi([1,2], 1);
     
     switch(T)
-        
-        
+               
         case 1
             X = randi(circle(1,:), 1);
             Y = randi(circle(2,:), 1);
@@ -60,9 +59,33 @@ imshow(img);
 
 %% save the file
 
-file_name = 'D:/IUPUI/Test_data/test_blur/image_00.png';
+file_name = 'D:/IUPUI/Test_data/test_blur/image_04.png';
 
 imwrite(img, file_name);
+
+return;
+
+%% this adds a capabilityy to write out individual depth maps
+
+min_depth = 0;
+max_depth = 255;
+
+for idx=min_depth:max_depth
+    gt = idx*ones(300,300);
+
+    imwrite(uint8(gt), strcat('D:/IUPUI/Test_data/test_blur/depth_',num2str(idx,'%03d'),'.png'));
+
+end
+
+%% write out the blur image input
+
+for idx=0:4
+
+    for jdx=0:255
+        fprintf('images/image_%02d.png, depth_maps/depth_%03d.png, 0.32, 0.01, 256, %03d\n', idx, jdx, jdx);
+    end
+
+end
 
 
 
