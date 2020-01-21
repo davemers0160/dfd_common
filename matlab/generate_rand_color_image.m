@@ -17,18 +17,20 @@ img_w = 300;
 img_h = 300;
 
 % x_min,x_max; y_min,y_max; min_r,max_r
-circle = [1,img_w; 1,img_h; 20,40];
-polygon = [1,img_w; 1,img_h; -100,100];
+circle = [1,img_w; 1,img_h; 10,20];
+polygon = [1,img_w; 1,img_h; -50,50];
 
 commandwindow;
 
 %%
 
 img = 255*ones(img_w, img_h, 3);
+dm = zeros(img_w, img_h, 3);
 
 for idx=1:800
     
     T = randi([1,2], 1);
+    V = randi([0 255], 1);
     
     switch(T)
                
@@ -39,6 +41,8 @@ for idx=1:800
             C = randi([1,numel(color)],1);
 
             img = insertShape(img, 'FilledCircle', [X, Y, R], 'Color', color{C},'Opacity',1);
+            dm = insertShape(dm, 'FilledCircle', [X, Y, R], 'Color', [V,V,V]/255,'Opacity',1);
+
 
         case 2
             X = randi(polygon(1,:), 1);
@@ -51,17 +55,27 @@ for idx=1:800
             C = randi([1,numel(color)],1);
 
             img = insertShape(img, 'FilledPolygon', P, 'Color', color{C},'Opacity',1);
+            dm = insertShape(dm, 'FilledPolygon', P, 'Color', [V,V,V]/255,'Opacity',1);
 
     end
 end
 
+figure
 imshow(img);
+
+figure
+imshow(dm);
 
 %% save the file
 
-file_name = 'D:/IUPUI/Test_data/test_blur/image_04.png';
+save_path = 'D:/IUPUI/Test_data/test_blur2/';
+image_num = '09';
 
-imwrite(img, file_name);
+img_filename = strcat('images/image_', image_num, '.png');
+imwrite(img, strcat(save_path, img_filename));
+
+dm_filename = strcat('depth_maps/dm_', image_num, '.png');
+imwrite(dm, strcat(save_path, dm_filename));
 
 return;
 
