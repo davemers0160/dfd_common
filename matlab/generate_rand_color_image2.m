@@ -48,8 +48,8 @@ for idx=1:numel(dm_values)
                 R = randi(circle(3,:), 1);
                 C = randi([1,numel(color)],1);
 
-                img = insertShape(img, 'FilledCircle', [X, Y, R], 'Color', color{C},'Opacity',1);
-                dm = insertShape(dm, 'FilledCircle', [X, Y, R], 'Color', [idx,idx,idx]/255,'Opacity',1);
+                img = insertShape(img, 'FilledCircle', [X, Y, R], 'Color', color{C}, 'Opacity',1, 'SmoothEdges', false);
+                dm = insertShape(dm, 'FilledCircle', [X, Y, R], 'Color', [idx,idx,idx]/255, 'Opacity',1, 'SmoothEdges', false);
 
 
             case 2
@@ -62,8 +62,8 @@ for idx=1:numel(dm_values)
 
                 C = randi([1,numel(color)],1);
 
-                img = insertShape(img, 'FilledPolygon', P, 'Color', color{C},'Opacity',1);
-                dm = insertShape(dm, 'FilledPolygon', P, 'Color', [idx,idx,idx]/255,'Opacity',1);
+                img = insertShape(img, 'FilledPolygon', P, 'Color', color{C}, 'Opacity',1, 'SmoothEdges', false);
+                dm = insertShape(dm, 'FilledPolygon', P, 'Color', [idx,idx,idx]/255, 'Opacity',1, 'SmoothEdges', false);
 
         end
     end
@@ -78,7 +78,7 @@ imshow(dm);
 %% save the file
 
 save_path = 'D:/IUPUI/Test_data/test_blur3/';
-image_num = '00';
+image_num = '09';
 
 img_filename = strcat('images/image_', image_num, '.png');
 imwrite(img, strcat(save_path, img_filename));
