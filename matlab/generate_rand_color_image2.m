@@ -11,104 +11,146 @@ plot_num = 1;
 
 %% shape parameters
 
-color = {'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'white'};
+%color = {'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'white', [0.5, 0.5, 0.5]};
+% color = {[0 0 1]; [0 1 0]; [1 0 0]; [0 1 1]; [1 0 1]; [1 1 0]; [0 0 0]; [1 1 1]; [0.5 0.5 0.5]};                    
 
-img_w = 300;
-img_h = 300;
+% http://alumni.media.mit.edu/~wad/color/numbers.html
+color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
+         [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
+         [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
+         [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
+
+commandwindow;
+
+%% create the folders
+save_path = 'D:/IUPUI/Test_data/test_blur4/';
+
+warning('off');
+mkdir(save_path);
+mkdir(save_path, 'images');
+mkdir(save_path, 'depth_maps');
+warning('on');
+
+%% show the colors
+img_w = 50;
+img_h = 250;
+img = [];
+
+for idx=1:numel(color)
+    img = cat(2, img, cat(3, color{idx}(1).*ones(img_h, img_w), color{idx}(2).*ones(img_h, img_w), color{idx}(3).*ones(img_h, img_w))); 
+end
+
+figure(plot_num)
+imshow(img)
+plot_num = plot_num + 1;
+
+%% start to create the images
+img_w = 400;
+img_h = 400;
 
 % x_min,x_max; y_min,y_max; min_r,max_r
 circle = [1,img_w; 1,img_h; 10,20];
 polygon = [1,img_w; 1,img_h; -50,50];
 
-commandwindow;
+dm_values = [0, 9:1:232];
 
-%% start to create the images
+fprintf('%s\n\n', save_path);
 
-img = 128*ones(img_w, img_h, 3);
-dm = zeros(img_w, img_h, 3);
+tic;
+for kdx=0:49
 
-dm_values = [0, 8:1:232];
-
-for idx=1:numel(dm_values)
+    % get the random background color
+    bg_color = randi([1,numel(color)],1);
+    img = cat(3, color{bg_color}(1).*ones(img_h, img_w), color{bg_color}(2).*ones(img_h, img_w), color{bg_color}(3).*ones(img_h, img_w));
+    dm = zeros(img_h, img_w, 3);
     
-    % get the number of shapes for a given depth map value
-    N = randi([1,4], 1);
-    
-    
-    for jdx=1:N
-        % get the shape type
-        T = randi([1,2], 1);
-        V = idx;
+    D = randi([1, numel(dm_values)],1,50);
+    D = sort(unique(D));
 
-        switch(T)
+    for idx=1:numel(D)
 
-            case 1
-                X = randi(circle(1,:), 1);
-                Y = randi(circle(2,:), 1);
-                R = randi(circle(3,:), 1);
+        % get the number of shapes for a given depth map value
+%         N = randi([3,floor((numel(D)-idx)/2) + 6], 1);
+        N = randi([3,floor(exp((4*(numel(D)-idx))/numel(D))) + 6], 1);
+
+        dm_val = (dm_values(D(idx))/255)*ones(1,3); %, dm_values((idx, idx]/255.0;
+        
+        for jdx=1:N
+            % get the shape type
+            T = randi([1,2], 1);
+            
+            % get the random color for the shape
+            C = randi([1,numel(color)],1);
+            while(C == bg_color)
                 C = randi([1,numel(color)],1);
+            end
+            
+            switch(T)
+                case 1
+                    X = randi(circle(1,:), 1);
+                    Y = randi(circle(2,:), 1);
+                    R = randi(circle(3,:), 1);
 
-                img = insertShape(img, 'FilledCircle', [X, Y, R], 'Color', color{C},'Opacity',1);
-                dm = insertShape(dm, 'FilledCircle', [X, Y, R], 'Color', [idx,idx,idx]/255,'Opacity',1);
+                    img = insertShape(img, 'FilledCircle', [X, Y, R], 'Color', color{C}, 'Opacity',1, 'SmoothEdges', false);
+                    dm = insertShape(dm, 'FilledCircle', [X, Y, R], 'Color', dm_val, 'Opacity',1, 'SmoothEdges', false);
 
+                case 2
+                    X = randi(polygon(1,:), 1);
+                    Y = randi(polygon(2,:), 1);            
+                    P = randi(polygon(3,:), [1,6]);
+                    P(1:2:end) = P(1:2:end) + X;
+                    P(2:2:end) = P(2:2:end) + Y;
+                    P = cat(2, X, Y, P);
 
-            case 2
-                X = randi(polygon(1,:), 1);
-                Y = randi(polygon(2,:), 1);            
-                P = randi(polygon(3,:), [1,6]);
-                P(1:2:end) = P(1:2:end) + X;
-                P(2:2:end) = P(2:2:end) + Y;
-                P = cat(2, X, Y, P);
+                    img = insertShape(img, 'FilledPolygon', P, 'Color', color{C}, 'Opacity',1, 'SmoothEdges', false);
+                    dm = insertShape(dm, 'FilledPolygon', P, 'Color', dm_val, 'Opacity',1, 'SmoothEdges', false);
 
-                C = randi([1,numel(color)],1);
-
-                img = insertShape(img, 'FilledPolygon', P, 'Color', color{C},'Opacity',1);
-                dm = insertShape(dm, 'FilledPolygon', P, 'Color', [idx,idx,idx]/255,'Opacity',1);
-
+            end
         end
     end
+
+%     figure(plot_num)
+%     imshow(img);
+% 
+%     figure(plot_num + 1)
+%     imshow(dm);
+
+    % save the image file and depth maps
+    image_num = num2str(kdx, '%03d');
+
+    img_filename = strcat('images/image_', image_num, '.png');
+    imwrite(img, strcat(save_path, img_filename));
+
+    dm_filename = strcat('depth_maps/dm_', image_num, '.png');
+    imwrite(dm, strcat(save_path, dm_filename));
+    
+    fprintf('%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);
+    
 end
 
-figure
-imshow(img);
-
-figure
-imshow(dm);
-
-%% save the file
-
-save_path = 'D:/IUPUI/Test_data/test_blur3/';
-image_num = '00';
-
-img_filename = strcat('images/image_', image_num, '.png');
-imwrite(img, strcat(save_path, img_filename));
-
-dm_filename = strcat('depth_maps/dm_', image_num, '.png');
-imwrite(dm, strcat(save_path, dm_filename));
-
-return;
+toc;
 
 %% this adds a capabilityy to write out individual depth maps
 
-min_depth = 0;
-max_depth = 255;
-
-for idx=min_depth:max_depth
-    gt = idx*ones(300,300);
-
-    imwrite(uint8(gt), strcat('D:/IUPUI/Test_data/test_blur/depth_',num2str(idx,'%03d'),'.png'));
-
-end
+% min_depth = 0;
+% max_depth = 255;
+% 
+% for idx=min_depth:max_depth
+%     gt = idx*ones(300,300);
+% 
+%     imwrite(uint8(gt), strcat('D:/IUPUI/Test_data/test_blur/depth_',num2str(idx,'%03d'),'.png'));
+% 
+% end
 
 %% write out the blur image input
 
-for idx=0:4
-
-    for jdx=0:255
-        fprintf('images/image_%02d.png, depth_maps/depth_%03d.png, 0.32, 0.01, 256, %03d\n', idx, jdx, jdx);
-    end
-
-end
+% for idx=0:4
+% 
+%     for jdx=0:255
+%         fprintf('images/image_%02d.png, depth_maps/depth_%03d.png, 0.32, 0.01, 256, %03d\n', idx, jdx, jdx);
+%     end
+% 
+% end
 
 
 
