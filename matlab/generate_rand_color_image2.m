@@ -15,15 +15,26 @@ plot_num = 1;
 % color = {[0 0 1]; [0 1 0]; [1 0 0]; [0 1 1]; [1 0 1]; [1 1 0]; [0 0 0]; [1 1 1]; [0.5 0.5 0.5]};                    
 
 % http://alumni.media.mit.edu/~wad/color/numbers.html
-color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
-         [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
-         [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
-         [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
+% color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
+%          [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
+%          [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
+%          [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
+%      
+% 6-7-6 RGB color palette https://en.wikipedia.org/wiki/List_of_software_palettes
+green = [0, 42, 85, 128, 170, 212, 255];
+color = {};
+for r=0:5
+    for g=0:6
+        for b=0:5
+            color{end+1} = [51*r, green(g+1), 52*b]/255;
+        end
+    end
+end
 
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/test_blur4/';
+save_path = 'D:/IUPUI/Test_data/test_blur5/';
 
 warning('off');
 mkdir(save_path);
@@ -45,8 +56,8 @@ imshow(img)
 plot_num = plot_num + 1;
 
 %% start to create the images
-img_w = 400;
-img_h = 400;
+img_w = 360;
+img_h = 360;
 
 % x_min,x_max; y_min,y_max; min_r,max_r
 circle = [1,img_w; 1,img_h; 10,20];
@@ -57,7 +68,7 @@ dm_values = [0, 9:1:232];
 fprintf('%s\n\n', save_path);
 
 tic;
-for kdx=0:49
+for kdx=0:499
 
     % get the random background color
     bg_color = randi([1,numel(color)],1);
