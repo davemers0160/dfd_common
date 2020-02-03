@@ -87,7 +87,7 @@ parfor kdx=0:99
     for idx=1:numel(D)
         
         % get the number of shapes for a given depth map value
-        N = randi([floor(exp((2*(numel(D)-idx))/numel(D)))+3,floor(exp((5*(numel(D)-idx))/numel(D))) + 6], 1);
+        N = randi([floor(exp((3.7*(numel(D)-idx))/numel(D))),ceil(exp((4.0*(numel(D)-idx))/numel(D)))], 1);
         dm_blk = (dm_values(D(idx))/255)*ones(blk_h, blk_w, 3);
         
         for jdx=1:N
