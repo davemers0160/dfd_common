@@ -59,8 +59,8 @@ plot_num = plot_num + 1;
 img_w = 400;
 img_h = 400;
 
-blk_h = 40;
-blk_w = 40;
+blk_h = 35;
+blk_w = 35;
 max_dim = max(blk_h,blk_w);
 
 dm_values = [0, 9:1:232];
@@ -103,6 +103,8 @@ parfor kdx=0:99
     end
 
     img = img(20:379,20:379, :);
+    dm = dm(20:379,20:379, :);
+    
     % save the image file and depth maps
     image_num = num2str(kdx, '%03d');
 
