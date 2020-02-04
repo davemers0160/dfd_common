@@ -103,6 +103,8 @@ parfor kdx=0:99
     end
 
     img = img(20:379,20:379, :);
+    dm = dm(20:379,20:379, :);
+
     % save the image file and depth maps
     image_num = num2str(kdx, '%03d');
 
