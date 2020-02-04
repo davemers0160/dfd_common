@@ -34,7 +34,7 @@ end
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/test_blur6/';
+save_path = 'D:/IUPUI/Test_data/test_blur7/';
 
 warning('off');
 mkdir(save_path);
@@ -43,21 +43,26 @@ mkdir(save_path, 'depth_maps');
 warning('on');
 
 %% show the colors
-img_w = 50;
-img_h = 250;
-img = [];
-
-for idx=1:numel(color)
-    img = cat(2, img, cat(3, color{idx}(1).*ones(img_h, img_w), color{idx}(2).*ones(img_h, img_w), color{idx}(3).*ones(img_h, img_w))); 
-end
-
-figure(plot_num)
-imshow(img)
-plot_num = plot_num + 1;
+% img_w = 50;
+% img_h = 250;
+% img = [];
+% 
+% for idx=1:numel(color)
+%     img = cat(2, img, cat(3, color{idx}(1).*ones(img_h, img_w), color{idx}(2).*ones(img_h, img_w), color{idx}(3).*ones(img_h, img_w))); 
+% end
+% 
+% figure(plot_num)
+% imshow(img)
+% plot_num = plot_num + 1;
 
 %% start to create the images
 img_w = 400;
 img_h = 400;
+
+%img_w_range = 20:379;
+%img_h_range = 20:379;
+img_w_range = 10:389;
+img_h_range = 10:389;
 
 blk_h = 35;
 blk_w = 35;
@@ -102,9 +107,9 @@ parfor kdx=0:99
         end
     end
 
-    img = img(20:379,20:379, :);
-    dm = dm(20:379,20:379, :);
-    
+    img = img(img_h_range, img_w_range, :);
+    dm = dm(img_h_range, img_w_range, :);
+
     % save the image file and depth maps
     image_num = num2str(kdx, '%03d');
 
