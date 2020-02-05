@@ -34,7 +34,7 @@ end
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/test_blur7/';
+save_path = 'D:/IUPUI/Test_data/test_blur6/';
 
 warning('off');
 mkdir(save_path);
@@ -64,29 +64,31 @@ img_h = 400;
 img_w_range = 10:389;
 img_h_range = 10:389;
 
-blk_h = 35;
-blk_w = 35;
+blk_h = 40;
+blk_w = 40;
 max_dim = max(blk_h,blk_w);
 
 dm_values = [0, 9:1:232];
 
 % x_min,x_max; y_min,y_max; min_r,max_r
-rect = [1,blk_w; 1,blk_h; ceil(max_dim/8),ceil(max_dim/5)];
-circle = [1,blk_w; 1,blk_h; ceil(max_dim/8),ceil(max_dim/5)];
-polygon = [1,blk_w; 1,blk_h; -ceil(max_dim/6),ceil(max_dim/6)];
+rect = [1,blk_w; 1,blk_h; ceil(max_dim/7),ceil(max_dim/5)];
+circle = [1,blk_w; 1,blk_h; ceil(max_dim/7),ceil(max_dim/5)];
+polygon = [1,blk_w; 1,blk_h; -ceil(max_dim/5),ceil(max_dim/5)];
 shape_lims = {circle, polygon, rect};
 
 fprintf('%s\n\n', save_path);
 
 tic;
-parfor kdx=0:99
+parfor kdx=0:499
     
     % get the random background color
     bg_color = randi([1,numel(color)],1);
     img = cat(3, color{bg_color}(1).*ones(img_h, img_w), color{bg_color}(2).*ones(img_h, img_w), color{bg_color}(3).*ones(img_h, img_w));
     dm = zeros(img_h, img_w, 3);
     
-    D = randi([2, numel(dm_values)],1,50);
+    %img = gen_rand_image(img_h, img_w, 400, color, {[1,img_w; 1,img_h; ceil(img_w/25),ceil(img_w/20)],[1,img_w; 1,img_h; -ceil(img_w/20),ceil(img_w/20)],[1,img_w; 1,img_h; ceil(img_w/25),ceil(img_w/20)];});
+       
+    D = randi([2, numel(dm_values)],1,40);
     D = sort(unique(D));
     
     for idx=1:numel(D)
@@ -96,7 +98,7 @@ parfor kdx=0:99
         dm_blk = (dm_values(D(idx))/255)*ones(blk_h, blk_w, 3);
         
         for jdx=1:N
-            S = randi([15,30], 1);
+            S = randi([25,45], 1);
             [block] = gen_rand_image(blk_h, blk_w, S, color, shape_lims);
 
             X = randi([1,img_w-blk_w], 1);
