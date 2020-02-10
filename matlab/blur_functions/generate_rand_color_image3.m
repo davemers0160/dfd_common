@@ -14,27 +14,29 @@ plot_num = 1;
 %color = {'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'white', [0.5, 0.5, 0.5]};
 % color = {[0 0 1]; [0 1 0]; [1 0 0]; [0 1 1]; [1 0 1]; [1 1 0]; [0 0 0]; [1 1 1]; [0.5 0.5 0.5]};                    
 
+
 % http://alumni.media.mit.edu/~wad/color/numbers.html
-% color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
-%          [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
-%          [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
-%          [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
-%      
+color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
+         [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
+         [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
+         [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
+
+
 % 6-7-6 RGB color palette https://en.wikipedia.org/wiki/List_of_software_palettes
-green = [0, 42, 85, 128, 170, 212, 255];
-color = {};
-for r=0:5
-    for g=0:6
-        for b=0:5
-            color{end+1} = [51*r, green(g+1), 52*b]/255;
-        end
-    end
-end
+% green = [0, 42, 85, 128, 170, 212, 255];
+% color = {};
+% for r=0:5
+%     for g=0:6
+%         for b=0:5
+%             color{end+1} = [51*r, green(g+1), 52*b]/255;
+%         end
+%     end
+% end
 
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/test_blur6/';
+save_path = 'D:/IUPUI/Test_data/test_blur7/';
 
 warning('off');
 mkdir(save_path);
@@ -76,10 +78,16 @@ circle = [1,blk_w; 1,blk_h; ceil(max_dim/7),ceil(max_dim/5)];
 polygon = [1,blk_w; 1,blk_h; -ceil(max_dim/5),ceil(max_dim/5)];
 shape_lims = {circle, polygon, rect};
 
+save_name = strcat(save_path,'input_gen.txt');
+file_id = fopen(save_name, 'w');
+
 fprintf('%s\n\n', save_path);
+fprintf(file_id, '%s\n\n', save_path);
+
+num_images = 99;
 
 tic;
-parfor kdx=0:499
+parfor kdx=0:num_images
     
     % get the random background color
     bg_color = randi([1,numel(color)],1);
@@ -99,13 +107,23 @@ parfor kdx=0:499
         
         for jdx=1:N
             S = randi([25,45], 1);
-            [block] = gen_rand_image(blk_h, blk_w, S, color, shape_lims);
-
+            block = gen_rand_image(blk_h, blk_w, S, color, shape_lims);
+            
+            A = randi([0, 89],1,1);
+            block = imrotate(block, A, 'nearest', 'loose');
+            dm_blk_r = imrotate(dm_blk, A, 'nearest', 'loose');
+            
+            mask = dm_blk_r>0;
+            
             X = randi([1,img_w-blk_w], 1);
             Y = randi([1,img_h-blk_h], 1);
 
-            img(Y:Y+blk_h-1, X:X+blk_w-1,:) = block;
-            dm(Y:Y+blk_h-1, X:X+blk_w-1,:) = dm_blk;
+%             img(Y:Y+blk_h-1, X:X+blk_w-1,:) = block;
+%             dm(Y:Y+blk_h-1, X:X+blk_w-1,:) = dm_blk;
+            
+            img = overlay_with_mask(img, block, mask, X, Y);
+            dm = overlay_with_mask(dm, dm_blk_r, mask, X, Y);
+            
         end
     end
 
@@ -122,9 +140,19 @@ parfor kdx=0:499
     imwrite(dm, strcat(save_path, dm_filename));
     
     fprintf('%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);
+    %fprintf(file_id, '%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);   
     
 end
 
 toc;
 
+for kdx=0:num_images
+        % save the image file and depth maps
+    image_num = num2str(kdx, '%03d');
+    img_filename = strcat('images/image_', image_num, '.png');
+    dm_filename = strcat('depth_maps/dm_', image_num, '.png');
+    
+    fprintf(file_id, '%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);   
+end
+fclose(file_id);
 
