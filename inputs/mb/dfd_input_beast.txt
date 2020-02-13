@@ -16,7 +16,7 @@
 #             goes from outer most to the inner most layer.
 #
 # Scenario Name
-v01_32_lin_v2_
+l2_v01_32_v01_
 
 # Stopping criteria
 100, 400000
@@ -29,7 +29,7 @@ D:/Projects/dfd_common/inputs/mb/dfd_train_data_sm2.txt
 D:/Projects/dfd_common/inputs/mb/dfd_test_data_sm2.txt
 
 # Crop Info: Number of crops, train_crop_size (h,w)], eval_crop_size (h,w), scale (h,w)
-32, 32,32, 352,352, 1,1
+25, 32,32, 352,352, 1,1
 
 # average colors per channel
 # 98.7366, 98.7809
@@ -37,5 +37,5 @@ D:/Projects/dfd_common/inputs/mb/dfd_test_data_sm2.txt
 
 # v01
 #a 
-256, 256,256,256, 256,256,256
+256, 256,256,256, 256, 512,512,512, 256,256,256
 
