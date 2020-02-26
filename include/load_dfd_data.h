@@ -117,7 +117,7 @@ void load_dfd_data(
                 rgb2gray(f, tf);
                 rgb2gray(d1, td);
                 
-                t[0] = (td+256)-tf;              
+                t[0] = (td+256)-tf;
                 break;
             
             case 2:
@@ -126,21 +126,53 @@ void load_dfd_data(
                 break;
                 
             case 3:
-                rgb2gray(f, t[0]);
-                rgb2gray(d1, t[1]);
 
                 switch(secondary)
                 {
-                   case 1:
+					case 0:
+                        for (long r = 0; r < f.nr(); ++r)
+                        {
+                            for (long c = 0; c < f.nc(); ++c)
+                            {
+                                dlib::rgb_pixel p;
+                                dlib::assign_pixel(p, f(r, c));
+                                dlib::assign_pixel(t[0](r, c), p.red);
+                                dlib::assign_pixel(t[1](r, c), p.green);
+                                dlib::assign_pixel(t[2](r, c), p.blue);
+                            }
+                        }					
+						break;
+						
+					case 1:
+                        for (long r = 0; r < f.nr(); ++r)
+                        {
+                            for (long c = 0; c < f.nc(); ++c)
+                            {
+                                dlib::rgb_pixel p;
+                                dlib::assign_pixel(p, d1(r, c));
+                                dlib::assign_pixel(t[3](r, c), p.red);
+                                dlib::assign_pixel(t[4](r, c), p.green);
+                                dlib::assign_pixel(t[5](r, c), p.blue);
+                            }
+                        }					
+						break;
+						
+                    case 2:
+						rgb2gray(f, t[0]);
+						rgb2gray(d1, t[1]);
                         t[2] = dlib::matrix_cast<uint16_t>(dlib::abs(dlib::matrix_cast<float>(t[1])- dlib::matrix_cast<float>(t[0])));
                         break;
 
-                    case 2:
-                        dlib::sobel_edge_detector(t[0], horz_gradient, vert_gradient);                               
-                        dlib::assign_image(t[2], dlib::abs(horz_gradient)+dlib::abs(vert_gradient));   
+                    case 3:
+						rgb2gray(f, t[0]);
+						rgb2gray(d1, t[1]);
+                        dlib::sobel_edge_detector(t[0], horz_gradient, vert_gradient);
+                        dlib::assign_image(t[2], dlib::abs(horz_gradient)+dlib::abs(vert_gradient));
                         break;
 
-                    case 3:
+                    case 4:
+						rgb2gray(f, t[0]);
+						rgb2gray(d1, t[1]);
                         dlib::spatially_filter_image(t[0], t[2], lap_kernel, 1, true, false);
                         break;
 
