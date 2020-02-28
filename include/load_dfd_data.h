@@ -126,7 +126,12 @@ void load_dfd_data(
                 break;
                 
             case 3:
-
+                // get the images size and resize the t array
+                for (int m = 0; m < img_depth; ++m)
+                {
+                    t[m].set_size(f.nr(), f.nc());
+                }
+				
                 switch(secondary)
                 {
 					case 0:
