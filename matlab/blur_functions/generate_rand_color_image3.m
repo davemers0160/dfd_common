@@ -13,14 +13,14 @@ plot_num = 1;
 
 %color = {'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'white', [0.5, 0.5, 0.5]};
 % color = {[0 0 1]; [0 1 0]; [1 0 0]; [0 1 1]; [1 0 1]; [1 1 0]; [0 0 0]; [1 1 1]; [0.5 0.5 0.5]};                    
-
+% color_palette = 'basic'
 
 % http://alumni.media.mit.edu/~wad/color/numbers.html
 color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
          [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
          [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
          [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
-
+color_palette = 'mit';
 
 % 6-7-6 RGB color palette https://en.wikipedia.org/wiki/List_of_software_palettes
 % green = [0, 42, 85, 128, 170, 212, 255];
@@ -32,11 +32,12 @@ color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
 %         end
 %     end
 % end
+% color_palette = '676';
 
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/test_blur7/';
+save_path = 'D:/IUPUI/Test_data/test_blur7_test/';
 
 warning('off');
 mkdir(save_path);
@@ -58,6 +59,9 @@ warning('on');
 % plot_num = plot_num + 1;
 
 %% start to create the images
+img_offset = 0;
+num_images = 49;
+
 img_w = 400;
 img_h = 400;
 
@@ -78,13 +82,15 @@ circle = [1,blk_w; 1,blk_h; ceil(max_dim/7),ceil(max_dim/5)];
 polygon = [1,blk_w; 1,blk_h; -ceil(max_dim/5),ceil(max_dim/5)];
 shape_lims = {circle, polygon, rect};
 
-save_name = strcat(save_path,'input_gen.txt');
+save_name = strcat(save_path,'input_gen_',datestr(now,'yyyymmdd_HHMMSS'),'.txt');
 file_id = fopen(save_name, 'w');
+
+fprintf('# %s\n\n', color_palette);
+fprintf(file_id, '# %s\n\n', color_palette);
 
 fprintf('%s\n\n', save_path);
 fprintf(file_id, '%s\n\n', save_path);
 
-num_images = 99;
 
 tic;
 parfor kdx=0:num_images
@@ -148,7 +154,7 @@ toc;
 
 for kdx=0:num_images
         % save the image file and depth maps
-    image_num = num2str(kdx, '%03d');
+    image_num = num2str(kdx+img_offset, '%03d');
     img_filename = strcat('images/image_', image_num, '.png');
     dm_filename = strcat('depth_maps/dm_', image_num, '.png');
     
