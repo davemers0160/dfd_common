@@ -65,10 +65,11 @@ num_images = 49;
 img_w = 400;
 img_h = 400;
 
+% make this cropping a mod 16 number
 %img_w_range = 20:379;
 %img_h_range = 20:379;
-img_w_range = 10:389;
-img_h_range = 10:389;
+img_w_range = 8:391;
+img_h_range = 8:391;
 
 blk_h = 40;
 blk_w = 40;

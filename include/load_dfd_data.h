@@ -155,9 +155,9 @@ void load_dfd_data(
                             {
                                 dlib::rgb_pixel p;
                                 dlib::assign_pixel(p, d1(r, c));
-                                dlib::assign_pixel(t[3](r, c), p.red);
-                                dlib::assign_pixel(t[4](r, c), p.green);
-                                dlib::assign_pixel(t[5](r, c), p.blue);
+                                dlib::assign_pixel(t[0](r, c), p.red);
+                                dlib::assign_pixel(t[1](r, c), p.green);
+                                dlib::assign_pixel(t[2](r, c), p.blue);
                             }
                         }					
 						break;

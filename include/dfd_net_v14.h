@@ -13,10 +13,11 @@
 #include "dfd_dnn_input.h"
 //#include "gorgon_capture.h"
 
-extern const uint32_t img_depth = 6;
+extern const uint32_t img_depth = 3;
 extern const uint32_t secondary = 1;
 
-const std::array<float, img_depth> avg_color{ 107.1, 111.9, 132.8, 107.1, 111.9, 132.8 };
+//const std::array<float, img_depth> avg_color{ 107.1, 111.9, 132.8, 107.1, 111.9, 132.8 };
+//const std::array<float, img_depth> avg_color{ 110.9551, 98.1071, 69.9262 };
 
 // --------------------------------- Conv Filter Setup ------------------------------------
 template <long num_filters, typename SUBNET> using con2d = dlib::con<num_filters, 2, 2, 2, 2, SUBNET>;
@@ -129,7 +130,7 @@ template <typename SUBNET> using dtagi2 = dlib::add_tag_layer<205, SUBNET>;
 // Training Version with batch norm
 // ----------------------------------------------------------------------------------------
 using dfd_net_type = dlib::loss_multiclass_log_per_pixel<
-	con3<256, dlib::prelu<dlib::bn_con<dfd_res_33<256, 256, cbp3_blk<256,
+    con3<256, dlib::prelu<dlib::bn_con<dfd_res_33<256, 256, cbp3_blk<256,
 
     dlib::concat2<dtago1, dtagi1,
     dtagi1<cont2u<256, dfd_res_33<512, 512, cbp3_blk<512,
@@ -138,18 +139,17 @@ using dfd_net_type = dlib::loss_multiclass_log_per_pixel<
     dtagi2<cont2u<512, dfd_res_33<1024, 1024, con2d<1024,
     
     dtago2<dfd_res_33<512, 512, con2d<512,
-	
+    
     dtago1<dfd_res_33<256, 256, cbp3_blk<256, 
-    //dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>>
-    dlib::tag10<dlib::input_dfd_array<uint16_t, img_depth>>
+    //dlib::tag10<dlib::input_dfd_array<uint16_t, img_depth>>
+    dlib::input_dfd_array<uint16_t, img_depth>
     >>> >>> >>>> > >>>> > >>>>> >;
-
     
 // ----------------------------------------------------------------------------------------
 // Version with affine layers
 // ----------------------------------------------------------------------------------------
 using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
-	con3<256, dlib::prelu<dlib::affine<adfd_res_33<256, 256, acbp3_blk<256,
+    con3<256, dlib::prelu<dlib::affine<adfd_res_33<256, 256, acbp3_blk<256,
 
     dlib::concat2<dtago1, dtagi1,
     dtagi1<cont2u<256, adfd_res_33<512,512,acbp3_blk<512,
@@ -158,7 +158,7 @@ using adfd_net_type = dlib::loss_multiclass_log_per_pixel<
     dtagi2<cont2u<512, adfd_res_33<1024,1024,con2d<1024,
     
     dtago2<adfd_res_33<512,512,con2d<512,
-	
+    
     dtago1<adfd_res_33<256, 256, acbp3_blk<256, 
     //dlib::input<std::array<dlib::matrix<uint16_t>, img_depth>
     dlib::tag10<dlib::input_dfd_array<uint16_t, img_depth>>
