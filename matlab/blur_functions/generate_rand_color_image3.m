@@ -16,28 +16,28 @@ plot_num = 1;
 % color_palette = 'basic'
 
 % http://alumni.media.mit.edu/~wad/color/numbers.html
-color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
-         [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
-         [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
-         [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
-color_palette = 'mit';
+% color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
+%          [29, 105, 20]/255;[129, 74, 25]/255;[129, 38, 192]/255;[160, 160, 160]/255;...
+%          [129, 197, 122]/255;[157, 175, 255]/255;[41, 208, 208]/255;[255, 146, 51]/255;...
+%          [255, 238, 51]/255;[233, 222, 187]/255;[255, 205, 243]/255;[255, 255, 255]/255};
+% color_palette = 'mit';
 
 % 6-7-6 RGB color palette https://en.wikipedia.org/wiki/List_of_software_palettes
-% green = [0, 42, 85, 128, 170, 212, 255];
-% color = {};
-% for r=0:5
-%     for g=0:6
-%         for b=0:5
-%             color{end+1} = [51*r, green(g+1), 52*b]/255;
-%         end
-%     end
-% end
-% color_palette = '676';
+green = [0, 42, 85, 128, 170, 212, 255];
+color = {};
+for r=0:5
+    for g=0:6
+        for b=0:5
+            color{end+1} = [51*r, green(g+1), 52*b]/255;
+        end
+    end
+end
+color_palette = '676';
 
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/test_blur7_test/';
+save_path = 'D:/IUPUI/Test_data/tb9_test/';
 
 warning('off');
 mkdir(save_path);
@@ -60,7 +60,7 @@ warning('on');
 
 %% start to create the images
 img_offset = 0;
-num_images = 49;
+num_images = 9;
 
 img_w = 400;
 img_h = 400;
@@ -75,7 +75,11 @@ blk_h = 40;
 blk_w = 40;
 max_dim = max(blk_h,blk_w);
 
+% depth map values
 dm_values = [0, 9:1:232];
+
+% intensity values to simulate different light conditions
+int_values = [0.2, 0.4, 0.6, 0.8, 1.0];
 
 % x_min,x_max; y_min,y_max; min_r,max_r
 rect = [1,blk_w; 1,blk_h; ceil(max_dim/7),ceil(max_dim/5)];
@@ -136,17 +140,27 @@ parfor kdx=0:num_images
 
     img = img(img_h_range, img_w_range, :);
     dm = dm(img_h_range, img_w_range, :);
-
-    % save the image file and depth maps
-    image_num = num2str(kdx, '%03d');
-
-    img_filename = strcat('images/image_', image_num, '.png');
-    imwrite(img, strcat(save_path, img_filename));
-
+    
+    image_num = num2str(kdx+img_offset, '%03d');
     dm_filename = strcat('depth_maps/dm_', image_num, '.png');
     imwrite(dm, strcat(save_path, dm_filename));
+
+    % now that the image has been created let's run through the intensity
+    % values
     
-    fprintf('%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);
+    for jdx=1:numel(int_values)
+        
+        img_int = img*int_values(jdx);
+        % save the image file and depth maps
+
+        image_int = num2str(int_values(jdx)*100, '%03d');
+        
+        img_filename = strcat('images/image_', image_num, '_', image_int, '.png');
+        imwrite(img_int, strcat(save_path, img_filename));
+        
+        fprintf('%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);
+    end
+    
     %fprintf(file_id, '%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);   
     
 end
@@ -156,10 +170,15 @@ toc;
 for kdx=0:num_images
         % save the image file and depth maps
     image_num = num2str(kdx+img_offset, '%03d');
-    img_filename = strcat('images/image_', image_num, '.png');
     dm_filename = strcat('depth_maps/dm_', image_num, '.png');
     
-    fprintf(file_id, '%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);   
+    for jdx=1:numel(int_values)
+        image_int = num2str(int_values(jdx)*100, '%03d');
+        img_filename = strcat('images/image_', image_num, '_', image_int, '.png');
+        fprintf(file_id, '%s, %s, 0.32, 0.01, 256\n', img_filename, dm_filename);   
+    end
+    
 end
+
 fclose(file_id);
 
