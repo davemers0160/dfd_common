@@ -37,7 +37,7 @@ color_palette = '676';
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb9_test/';
+save_path = 'D:/IUPUI/Test_data/tb9_train/';
 
 warning('off');
 mkdir(save_path);
@@ -60,7 +60,7 @@ warning('on');
 
 %% start to create the images
 img_offset = 0;
-num_images = 9;
+num_images = 79;
 
 img_w = 400;
 img_h = 400;
