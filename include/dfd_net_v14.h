@@ -13,7 +13,7 @@
 #include "dfd_dnn_input.h"
 //#include "gorgon_capture.h"
 
-extern const uint32_t img_depth = 3;
+extern const uint32_t img_depth = 6;
 extern const uint32_t secondary = 1;
 
 //const std::array<float, img_depth> avg_color{ 107.1, 111.9, 132.8, 107.1, 111.9, 132.8 };
@@ -141,8 +141,8 @@ using dfd_net_type = dlib::loss_multiclass_log_per_pixel<
     dtago2<dfd_res_33<512, 512, con2d<512,
     
     dtago1<dfd_res_33<256, 256, cbp3_blk<256, 
-    //dlib::tag10<dlib::input_dfd_array<uint16_t, img_depth>>
-    dlib::input_dfd_array<uint16_t, img_depth>
+    dlib::tag10<dlib::input_dfd_array<uint16_t, img_depth>>
+    //dlib::input_dfd_array<uint16_t, img_depth>
     >>> >>> >>>> > >>>> > >>>>> >;
     
 // ----------------------------------------------------------------------------------------
