@@ -4,11 +4,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdint>
-//#include <iostream>
-//#include <thread>
 #include <vector>
-//#include <algorithm>
-//#include <string>
+#include <array>
 
 // Custom includes
 #include "ssim.h"
