@@ -13,7 +13,7 @@
 #include "dfd_dnn_input.h"
 //#include "gorgon_capture.h"
 
-extern const uint32_t img_depth = 3;
+extern const uint32_t img_depth = 6;
 extern const uint32_t secondary = 1;
 
 //const std::array<float, img_depth> avg_color{ 107.1, 111.9, 132.8, 107.1, 111.9, 132.8 };
