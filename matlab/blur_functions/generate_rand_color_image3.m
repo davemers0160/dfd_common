@@ -12,8 +12,8 @@ plot_num = 1;
 %% shape parameters
 
 %color = {'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'white', [0.5, 0.5, 0.5]};
-% color = {[0 0 1]; [0 1 0]; [1 0 0]; [0 1 1]; [1 0 1]; [1 1 0]; [0 0 0]; [1 1 1]; [0.5 0.5 0.5]};                    
-% color_palette = 'basic'
+color = {[0 0 1]; [0 1 0]; [1 0 0]; [0 1 1]; [1 0 1]; [1 1 0]; [0 0 0]; [1 1 1]; [0.5 0.5 0.5]};                    
+color_palette = 'basic';
 
 % http://alumni.media.mit.edu/~wad/color/numbers.html
 % color = {[0, 0, 0];[87, 87, 87]/255;[173, 35, 35]/255;[42, 75, 215]/255;...
@@ -23,21 +23,24 @@ plot_num = 1;
 % color_palette = 'mit';
 
 % 6-7-6 RGB color palette https://en.wikipedia.org/wiki/List_of_software_palettes
-green = [0, 42, 85, 128, 170, 212, 255];
-color = {};
-for r=0:5
-    for g=0:6
-        for b=0:5
-            color{end+1} = [51*r, green(g+1), 52*b]/255;
-        end
-    end
-end
-color_palette = '676';
+% green = [0, 42, 85, 128, 170, 212, 255];
+% color = {};
+% for r=0:5
+%     for g=0:6
+%         for b=0:5
+%             color{end+1} = [51*r, green(g+1), 52*b]/255;
+%         end
+%     end
+% end
+% color_palette = '676';
+
+% full RGB
+
 
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb9_train/';
+save_path = 'D:/IUPUI/Test_data/tb10_test/';
 
 warning('off');
 mkdir(save_path);
@@ -60,7 +63,7 @@ warning('on');
 
 %% start to create the images
 img_offset = 0;
-num_images = 79;
+num_images = 9;
 
 img_w = 400;
 img_h = 400;
@@ -68,8 +71,8 @@ img_h = 400;
 % make this cropping a mod 16 number
 %img_w_range = 20:379;
 %img_h_range = 20:379;
-img_w_range = 8:391;
-img_h_range = 8:391;
+img_w_range = 17:img_w;
+img_h_range = 17:img_h;
 
 blk_h = 40;
 blk_w = 40;
