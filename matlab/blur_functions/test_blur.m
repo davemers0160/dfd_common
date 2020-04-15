@@ -16,7 +16,7 @@ plot_num = 1;
 % kernel = ones(1,kernel_size);
 % kernel = kernel/(numel(kernel));
 
-% gaussian kernel
+% gaussian kernel size
 kernel_size = 51;
 
 sigma_start = 0.1;
@@ -41,6 +41,7 @@ data = cat(2, zeros(1, 100), 255*ones(1, 100+100));
 fprintf('float[,] kernel = new float[,] {\n');
 
 sigma = sigma_start;
+sig_array = zeros(1,numel(blur_radius));
 
 for idx=1:numel(blur_radius)
     
@@ -67,13 +68,25 @@ for idx=1:numel(blur_radius)
     str = strcat(str(1:end-1),'},');
     fprintf('%s\n', str);
     
-    %sigma = sigma - sigma_step;
+    sig_array(idx) = sigma - sigma_step;
     
 end
 
 fprintf('};\n');
 
     
+fprintf('sigma = [');
+str = '';
+for idx = 1:numel(sig_array)
+    
+    str = strcat(str, num2str(sig_array(idx), '%1.3f, '));
+    
+end
+str = strcat(str(1:end-1),'];');
+fprintf('%s\n', str);
+
+
+
 % while(num < 20)
 %     blur_data = (conv(blur_data, kernel,'same'));
 % 
