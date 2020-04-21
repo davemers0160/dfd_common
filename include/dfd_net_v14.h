@@ -194,6 +194,7 @@ net_type config_net(std::array<float, img_depth>& avg_color, std::vector<uint32_
     );
 
     dlib::layer<net_type::num_layers - 1>(net).set_avg_colors(avg_color);
+    dlib::layer<net_type::num_layers - 1>(net).set_scale(1.0/256.0);
 
     return net;
 
