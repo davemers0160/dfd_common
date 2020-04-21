@@ -21,16 +21,20 @@ function [img] = gen_rand_image(img_h, img_w, N, color, limits)
 
         switch(T)
             case 1
-                X = randi(circle(1,:), 1);
-                Y = randi(circle(2,:), 1);
-                R = randi(circle(3,:), 1);
+                %X = randi(circle(1,:), 1);
+                %Y = randi(circle(2,:), 1);
+                X = randi([1,img_w], 1);
+                Y = randi([1,img_h], 1);
+                R = randi(circle(1,:), 1);
 
                 img = insertShape(img, 'FilledCircle', [X, Y, R], 'Color', color{C}, 'Opacity',1, 'SmoothEdges', false);
 
             case 2
-                X = randi(polygon(1,:), 1);
-                Y = randi(polygon(2,:), 1);            
-                P = randi(polygon(3,:), [1,6]);
+%                 X = randi(polygon(1,:), 1);
+%                 Y = randi(polygon(2,:), 1);
+                X = randi([1,img_w], 1);
+                Y = randi([1,img_h], 1);
+                P = randi(polygon(1,:), [1,6]);
                 P(1:2:end) = P(1:2:end) + X;
                 P(2:2:end) = P(2:2:end) + Y;
                 P = cat(2, X, Y, P);
@@ -38,10 +42,12 @@ function [img] = gen_rand_image(img_h, img_w, N, color, limits)
                 img = insertShape(img, 'FilledPolygon', P, 'Color', color{C}, 'Opacity',1, 'SmoothEdges', false);
 
             case 3
-                X = randi(rect(1,:), 1);
-                Y = randi(rect(2,:), 1);                      
-                W = randi(rect(3,:), 1);
-                H = randi(rect(3,:), 1);
+%                 X = randi(rect(1,:), 1);
+%                 Y = randi(rect(2,:), 1); 
+                X = randi([1,img_w], 1);
+                Y = randi([1,img_h], 1);
+                W = randi(rect(1,:), 1);
+                H = randi(rect(1,:), 1);
 
                 img = insertShape(img, 'FilledRectangle', [X, Y, W, H], 'Color', color{C}, 'Opacity',1, 'SmoothEdges', false);
         end

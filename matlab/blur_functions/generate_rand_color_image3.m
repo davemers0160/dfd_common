@@ -85,9 +85,9 @@ dm_values = [0, 9:1:232];
 int_values = [0.2, 0.4, 0.6, 0.8, 1.0];
 
 % x_min,x_max; y_min,y_max; min_r,max_r
-rect = [1,blk_w; 1,blk_h; ceil(max_dim/7),ceil(max_dim/5)];
-circle = [1,blk_w; 1,blk_h; ceil(max_dim/7),ceil(max_dim/5)];
-polygon = [1,blk_w; 1,blk_h; -ceil(max_dim/5),ceil(max_dim/5)];
+rect = [ceil(max_dim/7), ceil(max_dim/5)];
+circle = [ceil(max_dim/7), ceil(max_dim/5)];
+polygon = [-ceil(max_dim/5), ceil(max_dim/5)];
 shape_lims = {circle, polygon, rect};
 
 save_name = strcat(save_path,'input_gen_',datestr(now,'yyyymmdd_HHMMSS'),'.txt');
