@@ -40,7 +40,7 @@ color_palette = '676';
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb12_test/';
+save_path = 'D:/IUPUI/Test_data/tb12_test2/';
 
 warning('off');
 mkdir(save_path);
@@ -129,24 +129,15 @@ polygon_l = [-ceil(max_dim/8), ceil(max_dim/8)];
 shape_lims_l = {circle_l, polygon_l, rect_l};
 
 %% start to create the images
-save_name = strcat(save_path,'input_gen_',datestr(now,'yyyymmdd_HHMMSS'),'.txt');
-file_id = fopen(save_name, 'w');
 
 fprintf('# %s\n\n', color_palette);
-fprintf(file_id, '# %s\n\n', color_palette);
-
 fprintf('%s\n\n', save_path);
-fprintf(file_id, '%s\n\n', save_path);
 
 tic;
 parfor kdx=0:(num_images-1)
     
-    % get the random background color
-    %bg_color = randi([1,numel(color)],1);
-    %img1 = cat(3, color{bg_color}(1).*ones(img_h, img_w), color{bg_color}(2).*ones(img_h, img_w), color{bg_color}(3).*ones(img_h, img_w));
-    %img2 = cat(3, color{bg_color}(1).*ones(img_h, img_w), color{bg_color}(2).*ones(img_h, img_w), color{bg_color}(3).*ones(img_h, img_w));
     % create an image as a background instead of a solid color
-    img1 = gen_rand_image(img_h, img_w, 400, color, shape_lims_l);
+    img1 = gen_rand_image_all(img_h, img_w, 400, shape_lims_l);
     img2 = img1;
     
     % generate the first depthmap value - use the largest (farthest) value
@@ -178,32 +169,47 @@ parfor kdx=0:(num_images-1)
         max_N = ceil(exp((4.0*(num_objects-idx))/num_objects));
         N = randi([min_N, max_N], 1);
         
-        %dm_index = find(depthmap_range == D(idx), 1, 'first');
-        %dm_blk = (depthmap_range(dm_index)/255)*ones(blk_h, blk_w, 3);
-        %fprintf('depthmap_range(dm_index): %d\n', depthmap_range(dm_index));
         dm_blk = (D(idx)/255)*ones(blk_h, blk_w, 3);
         
         % create the overlay mask and mask block
         blur_mask = ones(img_h+blk_h, img_w+blk_w);
         blur_mask_blk = zeros(blk_h, blk_w);
         
+        blur_mask_blk_r = [];
+        dm_blk_r = [];
+        rotation_mask = [];
+        
         for jdx=1:N
             % the number of shapes in an image block
             S = randi([25,45], 1);
-            block = gen_rand_image(blk_h, blk_w, S, color, shape_lims);
+            block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
             
-            A = randi([0, 89], 1, 1);
-            block = imrotate(block, A, 'nearest', 'loose');
-            blur_mask_blk_r = imrotate(blur_mask_blk, A, 'nearest', 'loose');
-            
-            % check for a depthmap value of 0 and handle as a special case
-            if(D(idx) == 0)
-                dm_blk_r = imrotate(dm_blk+1, A, 'nearest', 'loose');
-                rotation_mask = dm_blk_r > 0;
-                dm_blk_r = imrotate(dm_blk, A, 'nearest', 'loose');                
-            else
-                dm_blk_r = imrotate(dm_blk, A, 'nearest', 'loose');
-                rotation_mask = dm_blk_r > 0;                
+            % generate random number to pick either the block or a circle
+            shape_type = randi([0,1],1);
+            switch(shape_type)
+                case 0
+                    A = randi([0, 89], 1, 1);
+                    block = imrotate(block, A, 'nearest', 'loose');
+                    blur_mask_blk_r = imrotate(blur_mask_blk, A, 'nearest', 'loose');
+
+                    % check for a depthmap value of 0 and handle as a special case
+                    if(D(idx) == 0)
+                        dm_blk_r = imrotate(dm_blk+1, A, 'nearest', 'loose');
+                        rotation_mask = dm_blk_r > 0;
+                        dm_blk_r = imrotate(dm_blk, A, 'nearest', 'loose');                
+                    else
+                        dm_blk_r = imrotate(dm_blk, A, 'nearest', 'loose');
+                        rotation_mask = dm_blk_r > 0;                
+                    end
+                case 1
+                    R = floor(randi([floor(max_blk_dim*0.8), max_blk_dim],1)/2 + 0.5);
+                    circle_mask = zeros(blk_h, blk_w);
+                    circle_mask = insertShape(circle_mask, 'FilledCircle', [floor(blk_w/2), floor(blk_h/2), R], 'Color', [1,1,1], 'Opacity',1, 'SmoothEdges', false);
+                    circle_mask = circle_mask(:,:,1);
+                    block = block.*circle_mask;
+                    dm_blk_r = dm_blk.*circle_mask;
+                    rotation_mask = circle_mask;
+                    blur_mask_blk_r = 1-circle_mask;
             end
             
             X = randi([1,img_w-blk_w], 1);
@@ -218,7 +224,6 @@ parfor kdx=0:(num_images-1)
         
         % create the 2-D gaussian kernel using the depth map value indexing the sigma array
         d_idx = D(idx) + 1;
-        %fprintf('d_idx, br1( d_idx ) + 1: %d, %d\n', d_idx, br1( d_idx ) + 1);
 
         k1 = create_gauss_kernel(kernel_size, sigma( br1( d_idx ) + 1 ) );
         k2 = create_gauss_kernel(kernel_size, sigma( br2( d_idx ) + 1 ) );
@@ -251,16 +256,13 @@ parfor kdx=0:(num_images-1)
     dm_filename = strcat('depth_maps/dm_', image_num, '.png');
     imwrite(dm, strcat(save_path, dm_filename));
 
-    % now that the image has been created let's run through the intensity
-    % values
-    
+    % now that the image has been created let's run through the intensity values   
     for jdx=1:numel(int_values)
         
         img_int1 = img1*int_values(jdx);
         img_int2 = img2*int_values(jdx);
         
         % save the image file and depth maps
-
         image_int = num2str(int_values(jdx)*100, '%03d');
         
         img_filename1 = strcat('images/image_f1_', image_num, '_', image_int, '.png');
@@ -273,8 +275,14 @@ parfor kdx=0:(num_images-1)
     end
         
 end
-
 toc;
+
+%% save the image names to the standard image input file structure
+
+save_name = strcat(save_path,'input_gen_',datestr(now,'yyyymmdd_HHMMSS'),'.txt');
+file_id = fopen(save_name, 'w');
+fprintf(file_id, '# %s\n\n', color_palette);
+fprintf(file_id, '%s\n\n', save_path);
 
 for kdx=0:(num_images-1)
     % save the image file and depth maps
