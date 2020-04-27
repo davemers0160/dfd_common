@@ -23,24 +23,25 @@ plot_num = 1;
 % color_palette = 'mit';
 
 % 6-7-6 RGB color palette https://en.wikipedia.org/wiki/List_of_software_palettes
-green = [0, 42, 85, 128, 170, 212, 255];
-color = {};
-for r=0:5
-    for g=0:6
-        for b=0:5
-            color{end+1} = [51*r, green(g+1), 51*b]/255;
-        end
-    end
-end
-color_palette = '676';
+% green = [0, 42, 85, 128, 170, 212, 255];
+% color = [];
+% for r=0:5
+%     for g=0:6
+%         for b=0:5
+%             color(end+1,:) = [51*r, green(g+1), 51*b]/255;
+%         end
+%     end
+% end
+% color_palette = '676';
 
-% full RGB
-
+% green 
+color = [35,44,41; 61,91,57; 113,114,80;  132,126,64]/255;
+color_palette = 'wood';
 
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb12_test2/';
+save_path = 'D:/IUPUI/Test_data/tb13_test/';
 
 warning('off');
 mkdir(save_path);
@@ -52,18 +53,20 @@ warning('on');
 num_images = 10;
 img_offset = 0;
 
-%% show the colors
-% img_w = 50;
-% img_h = 250;
-% img = [];
-% 
-% for idx=1:numel(color)
-%     img = cat(2, img, cat(3, color{idx}(1).*ones(img_h, img_w), color{idx}(2).*ones(img_h, img_w), color{idx}(3).*ones(img_h, img_w))); 
+%% load up the image generator
+
+lib_path = 'D:\Projects\simplex_noise\build\Release\';
+lib_name = 'sn_lib';
+hfile = 'D:\Projects\simplex_noise\include\sn_lib.h';
+
+% if(~libisloaded(lib_name))
+%     [notfound, warnings] = loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
 % end
 % 
-% figure(plot_num)
-% imshow(img)
-% plot_num = plot_num + 1;
+% if(~libisloaded(lib_name))
+%    fprintf('\nThe %s library did not load correctly!',  lib_name);    
+% end
+
 
 %% setup the blurring paramters
 
@@ -128,16 +131,38 @@ circle_l= [ceil(max_dim/18), ceil(max_dim/12)];
 polygon_l = [-ceil(max_dim/8), ceil(max_dim/8)];
 shape_lims_l = {circle_l, polygon_l, rect_l};
 
+
+% setting the image generation parameters for the simplex noise
+% scale: 1 -> smallest, 0.0001 -> largest
+octaves = 7;
+persistence = 70/100;
+
+
 %% start to create the images
 
 fprintf('# %s\n\n', color_palette);
 fprintf('%s\n\n', save_path);
 
+spmd
+    loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
+    
+end
+
 tic;
 parfor kdx=0:(num_images-1)
     
     % create an image as a background instead of a solid color
-    img1 = gen_rand_image_all(img_h, img_w, 400, shape_lims_l);
+    %img1 = gen_rand_image_all(img_h, img_w, 400, shape_lims_l);
+    %loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
+    seed = intmin('int64') + 2*intmax('int64')*rand(1);
+    calllib(lib_name, 'init', seed);
+    scale = 1;
+    for r=1:img_h
+        for c=1:img_w
+            index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+            img1(r,c,:) = color(index+1, :);
+        end
+    end
     img2 = img1;
     
     % generate the first depthmap value - use the largest (farthest) value
@@ -179,10 +204,23 @@ parfor kdx=0:(num_images-1)
         dm_blk_r = [];
         rotation_mask = [];
         
+        scale = 1/(max_depthmap + 1 - D(idx));
+        
         for jdx=1:N
+            
             % the number of shapes in an image block
-            S = randi([25,45], 1);
-            block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
+            %S = randi([25,45], 1);
+            %block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);  
+            block = zeros(blk_h, blk_w, 3);
+            
+            seed = intmin('int64') + 2*intmax('int64')*rand(1);
+            calllib(lib_name, 'init', seed);
+            for r=1:blk_h
+                for c=1:blk_w
+                    index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+                    block(r,c,:) = color(index+1, :);
+                end
+            end            
             
             % generate random number to pick either the block or a circle
             shape_type = randi([0,1],1);
