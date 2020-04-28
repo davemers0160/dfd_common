@@ -41,7 +41,7 @@ color_palette = 'wood';
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb13_test/';
+save_path = 'D:/IUPUI/Test_data/tb14_test/';
 
 warning('off');
 mkdir(save_path);
@@ -50,7 +50,7 @@ mkdir(save_path, 'depth_maps');
 warning('on');
 
 % the number of images to generate - not including the intensity variants
-num_images = 10;
+num_images = 20;
 img_offset = 0;
 
 %% load up the image generator
@@ -118,7 +118,8 @@ img_w_range = 17:400;
 img_h_range = 17:400;
 
 % intensity values to simulate different light conditions
-int_values = [0.2, 0.4, 0.6, 0.8, 1.0];
+%int_values = [0.2, 0.4, 0.6, 0.8, 1.0];
+int_values = [1.0];
 
 % x_min,x_max; y_min,y_max; min_r,max_r
 rect = [ceil(max_blk_dim/7), ceil(max_blk_dim/5)];
@@ -143,18 +144,18 @@ persistence = 70/100;
 fprintf('# %s\n\n', color_palette);
 fprintf('%s\n\n', save_path);
 
-spmd
-    loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
-    
-end
+% spmd
+%     loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
+%     
+% end
 
 tic;
-parfor kdx=0:(num_images-1)
+for kdx=0:(num_images-1)
     
     % create an image as a background instead of a solid color
     %img1 = gen_rand_image_all(img_h, img_w, 400, shape_lims_l);
     %loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
-    seed = intmin('int64') + 2*intmax('int64')*rand(1);
+    seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
     calllib(lib_name, 'init', seed);
     scale = 1;
     for r=1:img_h
@@ -213,7 +214,7 @@ parfor kdx=0:(num_images-1)
             %block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);  
             block = zeros(blk_h, blk_w, 3);
             
-            seed = intmin('int64') + 2*intmax('int64')*rand(1);
+            seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
             calllib(lib_name, 'init', seed);
             for r=1:blk_h
                 for c=1:blk_w
