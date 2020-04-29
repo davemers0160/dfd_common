@@ -1,20 +1,17 @@
-function RGB = depth_overlay(img, DepthMap)
+%function RGB = depth_overlay(img, depth_map)
+function depth_overlay(img, depth_map)
 
-    rows = size(DepthMap,1);
-    cols = size(DepthMap,2);
-    RGB = 0;
+    rows = size(depth_map,1);
+    cols = size(depth_map,2);
     
-    figure()
+    figure();
     set(gcf,'position',([100,100,800,600]),'color','w')
-    surf(cols:-1:1,1:rows,DepthMap,'CData',img,'FaceColor','texturemap', 'EdgeColor','none');
+    surf(cols:-1:1,1:rows,depth_map,'CData',img,'FaceColor','texturemap', 'EdgeColor','none');
     view(-160,60);
     hold on
     axis off
 
-%     RGB = ind2rgb(DepthMap,colormap(jet(256)));
-%     figure()
-%     image(RGB)
-%     axis off
-    %imwrite(RGB, strcat(scriptpath,'\color_depthmap.png'));
+    ax = gca;
+    ax.Position = [0.03 0.03 0.90 0.92];
 
 end

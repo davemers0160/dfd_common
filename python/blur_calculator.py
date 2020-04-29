@@ -22,6 +22,7 @@ blur_alpha[0:99, :] = 0
 
 limits = [0, 10000000]
 step = 1000
+spin_width = 100
 # px_size = 0.00155
 
 legend_label = ["fp 1", "fp 2", "CoC Difference"]
@@ -32,13 +33,15 @@ b_source = ColumnDataSource(data=dict(b1=[], b2=[]))
 # source = ColumnDataSource(data=dict(x=[], coc1=[], coc2=[], coc_diff=[]))
 
 # setup the inputs
-px_size = Spinner(title="pixel size (um)", low=0.001, high=10.0, step=0.001, value=1.55, width=100)
-f_num = Spinner(title="f number", low=0.01, high=100.0, step=0.01, value=2.35, width=100)
-f = Spinner(title="focal length (mm)", low=0.1, high=2500, step=0.1, value=200, width=100)
-do_1 = Slider(title="focus point 1 (m):", start=1, end=20000, step=1, value=309, width=1400, callback_policy="mouseup", callback_throttle=50)
+px_size = Spinner(title="pixel size (um)", low=0.001, high=10.0, step=0.001, value=3.45, width=spin_width)
+f_num = Spinner(title="f number", low=0.01, high=100.0, step=0.01, value=2.35, width=spin_width)
+f = Spinner(title="focal length (mm)", low=0.1, high=2500, step=0.1, value=200, width=spin_width)
+do_1 = Slider(title="focus point 1 (m):", start=1, end=20000, step=1, value=100, width=1400, callback_policy="mouseup", callback_throttle=50)
 do_2 = Slider(title="focus point 2 (m):", start=1, end=20000, step=1, value=10000, width=1400, callback_policy="mouseup")
-x_spin = Spinner(title="max x", low=limits[0], high=limits[1], step=1, value=1000, width=100)
-y_spin = Spinner(title="max y", low=limits[0], high=limits[1], step=1, value=40, width=100)
+min_x_spin = Spinner(title="Min Range", low=limits[0], high=limits[1], step=1, value=0, width=spin_width)
+max_x_spin = Spinner(title="Max Range", low=limits[0], high=limits[1], step=1, value=1000, width=spin_width)
+min_y_spin = Spinner(title="Min Radius", low=limits[0], high=limits[1], step=1, value=0, width=spin_width)
+max_y_spin = Spinner(title="Max Radius", low=limits[0], high=limits[1], step=1, value=40, width=spin_width)
 
 fp1_b = figure(plot_height=200, plot_width=200, title="Focal Point 1", toolbar_location=None)
 fp1_b.image(image="b1", x=0, y=0, dw=200, dh=200, global_alpha=1.0, dilate=False, palette="Greys256", source=b_source)
@@ -59,8 +62,8 @@ l1=coc_plot.multi_line(xs='x', ys='coc', source=source, line_width=2, color='col
 coc_plot.xaxis.axis_label = "Range (m)"
 coc_plot.yaxis.axis_label = "Pixel Radius"
 coc_plot.axis.axis_label_text_font_style = "bold"
-coc_plot.x_range = Range1d(start=0, end=x_spin.value)
-coc_plot.y_range = Range1d(start=0, end=y_spin.value)
+coc_plot.x_range = Range1d(start=min_x_spin.value, end=max_x_spin.value)
+coc_plot.y_range = Range1d(start=min_y_spin.value, end=max_y_spin.value)
 # coc_plot.legend[0].location = (900, 200))
 # legend = Legend(items=[(("fp 1", "fp 2", "CoC Difference"), [l1])], location=(0, -60))
 # coc_plot.add_layout(legend, 'right')
@@ -122,7 +125,9 @@ tmp_cb = CustomJS(args=tmp_dict, code="""
 
 
 # Custom JS code to update the plots
-cb_dict = dict(source=source, coc_plot=coc_plot, px_size=px_size, f_num=f_num, f=f, do_1=do_1, do_2=do_2, x_spin=x_spin, y_spin=y_spin, limits=limits, step=step)
+cb_dict = dict(source=source, coc_plot=coc_plot, px_size=px_size, f_num=f_num, f=f, do_1=do_1, do_2=do_2,
+               min_x_spin=min_x_spin, max_x_spin=max_x_spin, min_y_spin=min_y_spin, max_y_spin=max_y_spin,
+               limits=limits, step=step)
 update_plot_callback = CustomJS(args=cb_dict, code="""
     var data = source.data;
     data['x'] = [];
@@ -183,8 +188,10 @@ update_plot_callback = CustomJS(args=cb_dict, code="""
     data['coc'].push(coc2);
     data['coc'].push(coc_diff);
     
-    coc_plot.x_range.end = x_spin.value;
-    coc_plot.y_range.end = y_spin.value
+    coc_plot.x_range.start = min_x_spin.value;
+    coc_plot.y_range.start = min_y_spin.value   
+    coc_plot.x_range.end = max_x_spin.value;
+    coc_plot.y_range.end = max_y_spin.value
     source.change.emit();
 """)
 
@@ -206,11 +213,14 @@ def update_plot(attr, old, new):
     # source.data = dict(x=[r], coc1=[q_coc1], coc2=[q_coc2], coc_diff=[q_coc_diff])
     b_source.data = dict(b1=[blur_alpha], b2=[blur_alpha])
 
-    coc_plot.x_range.end = x_spin.value
-    coc_plot.y_range.end = y_spin.value
+    coc_plot.x_range.start = min_x_spin.value
+    coc_plot.y_range.start = min_y_spin.value
+
+    coc_plot.x_range.end = max_x_spin.value
+    coc_plot.y_range.end = max_y_spin.value
 
 
-for w in [px_size, f_num, f, do_1, do_2, x_spin, y_spin]:
+for w in [px_size, f_num, f, do_1, do_2, min_x_spin, max_x_spin, min_y_spin, max_y_spin]:
     # w.on_change('value', update_plot)
     w.js_on_change('value', update_plot_callback)
 
@@ -219,10 +229,15 @@ for w in [px_size, f_num, f, do_1, do_2, x_spin, y_spin]:
 
 update_plot(1, 1, 1)
 
-# layout = column([row([x_spin,y_spin]), blur_plot])
-inputs = column(px_size, f_num, f, x_spin, y_spin)
-blur_imgs = column(row([Spacer(width=20, height=20), fp1_b]), row([Spacer(width=20, height=20), fp1_b]))
-layout = column(row(inputs, coc_plot), do_1, do_2)
+# layout = column([row([max_x_spin,max_y_spin]), blur_plot])
+
+range_input = column(min_x_spin, max_x_spin)
+radius_input = column(min_y_spin, max_y_spin)
+#range_pn = Panel(child=range_input, title="Range")
+
+inputs = column(px_size, f_num, f, range_input, radius_input)
+#blur_imgs = column(row([Spacer(width=20, height=20), fp1_b]), row([Spacer(width=20, height=20), fp1_b]))
+layout = column(row(inputs, Spacer(width=20, height=20), coc_plot), do_1, do_2)
 
 show(layout)
 
