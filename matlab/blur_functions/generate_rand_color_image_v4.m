@@ -35,13 +35,14 @@ plot_num = 1;
 % color_palette = '676';
 
 % green 
-color = [35,44,41; 61,91,57; 113,114,80;  132,126,64]/255;
-color_palette = 'wood';
+% color = [35,44,41; 61,91,57; 113,114,80;  132,126,64]/255;
+% color_palette = 'wood';
 
+color_palette = 'full';
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb14_test/';
+save_path = 'D:/IUPUI/Test_data/tb15_test/';
 
 warning('off');
 mkdir(save_path);
@@ -50,7 +51,7 @@ mkdir(save_path, 'depth_maps');
 warning('on');
 
 % the number of images to generate - not including the intensity variants
-num_images = 20;
+num_images = 30;
 img_offset = 0;
 
 %% load up the image generator
@@ -127,11 +128,10 @@ circle = [ceil(max_blk_dim/7), ceil(max_blk_dim/5)];
 polygon = [-ceil(max_blk_dim/5), ceil(max_blk_dim/5)];
 shape_lims = {circle, polygon, rect};
 
-rect_l = [ceil(max_dim/18), ceil(max_dim/12)];
-circle_l= [ceil(max_dim/18), ceil(max_dim/12)];
-polygon_l = [-ceil(max_dim/8), ceil(max_dim/8)];
+rect_l = [ceil(max_dim/18), ceil(max_dim/14)];
+circle_l= [ceil(max_dim/18), ceil(max_dim/14)];
+polygon_l = [-ceil(max_dim/11), ceil(max_dim/11)];
 shape_lims_l = {circle_l, polygon_l, rect_l};
-
 
 % setting the image generation parameters for the simplex noise
 % scale: 1 -> smallest, 0.0001 -> largest
@@ -150,25 +150,35 @@ fprintf('%s\n\n', save_path);
 % end
 
 tic;
-for kdx=0:(num_images-1)
+parfor kdx=0:(num_images-1)
     
     % create an image as a background instead of a solid color
-    %img1 = gen_rand_image_all(img_h, img_w, 400, shape_lims_l);
-    %loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
-    seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-    calllib(lib_name, 'init', seed);
-    scale = 1;
-    for r=1:img_h
-        for c=1:img_w
-            index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-            img1(r,c,:) = color(index+1, :);
-        end
-    end
+    img1 = gen_rand_image_all(img_h, img_w, 450, shape_lims_l);
+
+%     seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
+%     calllib(lib_name, 'init', seed);
+%     scale = 1;
+%     for r=1:img_h
+%         for c=1:img_w
+%             index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+%             img1(r,c,:) = color(index+1, :);
+%         end
+%     end
+
     img2 = img1;
     
+    % randomly generate DM_N depth values 
+    if(depthmap_range(end) >= depthmap_range(1))
+        D = randi([depthmap_range(1), depthmap_range(end)], 1, DM_N);
+    else
+        D = randi([depthmap_range(end), depthmap_range(1)], 1, DM_N);
+    end
+    D = sort(unique(D), 'descend');    
+    
     % generate the first depthmap value - use the largest (farthest) value
-    dm = (max_depthmap/255)*ones(img_h, img_w, 3);
-     
+%     dm = (max_depthmap/255)*ones(img_h, img_w, 3);
+    dm = (D(1)/255)*ones(img_h, img_w, 3);
+    
     % blur that backgraound according to the depthmap value
     k1 = create_gauss_kernel(kernel_size, sigma( br1( max_depthmap + 1 ) + 1 ) );
     k2 = create_gauss_kernel(kernel_size, sigma( br2( max_depthmap + 1 ) + 1 ) );
@@ -176,23 +186,19 @@ for kdx=0:(num_images-1)
     % blur the layer and the blur_mask
     img1 = imfilter(img1, k1, 'corr', 'replicate', 'same');
     img2 = imfilter(img2, k2, 'corr', 'replicate', 'same');
-        
-    % randomly generate DM_N depth values 
-    if(depthmap_range(end) >= depthmap_range(1))
-        D = randi([depthmap_range(1), depthmap_range(end-1)], 1, DM_N);
-    else
-        D = randi([depthmap_range(end), depthmap_range(2)], 1, DM_N);
-    end
-    D = sort(unique(D), 'descend');
-    
-    for idx=1:numel(D)
+   
+    for idx=2:numel(D)
         
         layer_img1 = img1;
         layer_img2 = img2;        
         
         % get the number of shapes for a given depth map value
-        min_N = ceil(exp((3.7*(num_objects-idx))/num_objects));
-        max_N = ceil(exp((4.0*(num_objects-idx))/num_objects));
+%         min_N = ceil(exp((3.7*(num_objects-idx))/num_objects));
+%         max_N = ceil(exp((4.0*(num_objects-idx))/num_objects));
+        min_N = ceil(num_objects*(exp((4.0*((D(idx)-max_depthmap)))/max_depthmap)));
+        max_N = ceil(num_objects*(exp((1.0*((D(idx)-max_depthmap)))/max_depthmap)));
+        
+        
         N = randi([min_N, max_N], 1);
         
         dm_blk = (D(idx)/255)*ones(blk_h, blk_w, 3);
@@ -210,18 +216,18 @@ for kdx=0:(num_images-1)
         for jdx=1:N
             
             % the number of shapes in an image block
-            %S = randi([25,45], 1);
-            %block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);  
-            block = zeros(blk_h, blk_w, 3);
+            S = randi([25,45], 1);
+            block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
             
-            seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-            calllib(lib_name, 'init', seed);
-            for r=1:blk_h
-                for c=1:blk_w
-                    index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-                    block(r,c,:) = color(index+1, :);
-                end
-            end            
+%             block = zeros(blk_h, blk_w, 3);            
+%             seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
+%             calllib(lib_name, 'init', seed);
+%             for r=1:blk_h
+%                 for c=1:blk_w
+%                     index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+%                     block(r,c,:) = color(index+1, :);
+%                 end
+%             end            
             
             % generate random number to pick either the block or a circle
             shape_type = randi([0,1],1);
