@@ -35,14 +35,14 @@ plot_num = 1;
 % color_palette = '676';
 
 % green 
-% color = [35,44,41; 61,91,57; 113,114,80;  132,126,64]/255;
-% color_palette = 'wood';
+color = [35,44,41; 61,91,57; 113,114,80;  132,126,64]/255;
+color_palette = 'wood';
 
-color_palette = 'full';
+%color_palette = 'full';
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb15_test/';
+save_path = 'D:/IUPUI/Test_data/tb15_test_w/';
 
 warning('off');
 mkdir(save_path);
@@ -60,9 +60,9 @@ lib_path = 'D:\Projects\simplex_noise\build\Release\';
 lib_name = 'sn_lib';
 hfile = 'D:\Projects\simplex_noise\include\sn_lib.h';
 
-% if(~libisloaded(lib_name))
-%     [notfound, warnings] = loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
-% end
+if(~libisloaded(lib_name))
+    [notfound, warnings] = loadlibrary(fullfile(lib_path, strcat(lib_name,'.dll')), hfile);
+end
 % 
 % if(~libisloaded(lib_name))
 %    fprintf('\nThe %s library did not load correctly!',  lib_name);    
@@ -150,20 +150,20 @@ fprintf('%s\n\n', save_path);
 % end
 
 tic;
-parfor kdx=0:(num_images-1)
+for kdx=0:(num_images-1)
     
     % create an image as a background instead of a solid color
-    img1 = gen_rand_image_all(img_h, img_w, 450, shape_lims_l);
+%     img1 = gen_rand_image_all(img_h, img_w, 450, shape_lims_l);
 
-%     seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-%     calllib(lib_name, 'init', seed);
-%     scale = 1;
-%     for r=1:img_h
-%         for c=1:img_w
-%             index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-%             img1(r,c,:) = color(index+1, :);
-%         end
-%     end
+    seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
+    calllib(lib_name, 'init', seed);
+    scale = 1;
+    for r=1:img_h
+        for c=1:img_w
+            index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+            img1(r,c,:) = color(index+1, :);
+        end
+    end
 
     img2 = img1;
     
@@ -216,18 +216,18 @@ parfor kdx=0:(num_images-1)
         for jdx=1:N
             
             % the number of shapes in an image block
-            S = randi([25,45], 1);
-            block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
+%             S = randi([25,45], 1);
+%             block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
             
-%             block = zeros(blk_h, blk_w, 3);            
-%             seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-%             calllib(lib_name, 'init', seed);
-%             for r=1:blk_h
-%                 for c=1:blk_w
-%                     index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-%                     block(r,c,:) = color(index+1, :);
-%                 end
-%             end            
+            block = zeros(blk_h, blk_w, 3);            
+            seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
+            calllib(lib_name, 'init', seed);
+            for r=1:blk_h
+                for c=1:blk_w
+                    index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+                    block(r,c,:) = color(index+1, :);
+                end
+            end            
             
             % generate random number to pick either the block or a circle
             shape_type = randi([0,1],1);
