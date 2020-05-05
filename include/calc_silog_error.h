@@ -7,7 +7,8 @@
 #include <dlib/dnn.h>
 #include <dlib/matrix.h>
 
-double calc_silog_error(dlib::matrix<uint16_t> gt, dlib::matrix<uint16_t> map)
+template<typename T>
+double calc_silog_error(dlib::matrix<T> gt, dlib::matrix<T> map)
 {
 
     // check to make sure that the inputs are the same size
