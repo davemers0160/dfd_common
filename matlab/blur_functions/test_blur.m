@@ -17,15 +17,15 @@ plot_num = 1;
 % kernel = kernel/(numel(kernel));
 
 % gaussian kernel size
-kernel_size = 51;
+kernel_size = 71;
 
-sigma_start = 0.1;
+sigma_start = 0.05;
 sigma_step = 0.05;
-sigma_stop = 6.20;
+sigma_stop = 10.0;
 
 %sigma = sigma_start:sigma_step:sigma_stop;
 
-max_blur_radius = 50;
+max_blur_radius = 70;
 
 commandwindow;
 
@@ -62,7 +62,7 @@ for idx=1:numel(blur_radius)
     %fprintf('sigma: %1.4f, num: %03d\n', sigma(idx), num);
     fprintf('{');
     str = '';
-    for jdx=26:kernel_size
+    for jdx=floor(kernel_size/2+1):kernel_size
         str = strcat(str, num2str(kernel(jdx), '%1.5ff, '));
     end
     str = strcat(str(1:end-1),'},');
@@ -117,7 +117,14 @@ plot(blur_data, '--r')
 plot_num = plot_num + 1;
 
 figure(plot_num)
+plot(sig_array, '.-b')
+hold on
+plot_num = plot_num + 1;
+
+figure(plot_num)
 image(blur_data);
 colormap(gray(256));
 plot_num = plot_num + 1;
+
+
 

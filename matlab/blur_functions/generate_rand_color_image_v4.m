@@ -35,14 +35,16 @@ plot_num = 1;
 % color_palette = '676';
 
 % green 
-color = [35,44,41; 61,91,57; 113,114,80;  132,126,64]/255;
-color_palette = 'wood';
+% color = [35,44,41; 61,91,57; 113,114,80;  132,126,64]/255;
+% color_palette = 'wood';
 
-%color_palette = 'full';
+color = [];
+color_palette = 'full';
+
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb15_test_w/';
+save_path = 'D:/IUPUI/Test_data/tb16_test/';
 
 warning('off');
 mkdir(save_path);
@@ -51,7 +53,7 @@ mkdir(save_path, 'depth_maps');
 warning('on');
 
 % the number of images to generate - not including the intensity variants
-num_images = 30;
+num_images = 20;
 img_offset = 0;
 
 %% load up the image generator
@@ -75,22 +77,29 @@ end
 kernel_size = 51;
 
 % sigma values for gaussian kernel
-% this sigma ranges from 0 - 50 pixel blur radius
-sigma = [0.100,0.250,0.300,0.450,0.500,0.700,0.750,0.900,0.950,1.150,1.200,1.350,1.400,1.600,1.650,1.850,1.900,...
-    2.100,2.150,2.300,2.350,2.550,2.600,2.800,2.850,3.050,3.100,3.300,3.350,3.500,3.550,3.750,3.800,4.000,4.050,...
-    4.250,4.300,4.450,4.500,4.700,4.750,4.950,5.000,5.200,5.250,5.450,5.500,5.750,5.800,6.150,6.200];
+% this sigma ranges from 0 - 71 pixel blur radius:y = 0.1199x - 0.0984
+sigma = [0.050,0.250,0.300,0.450,0.500,0.700,0.750,0.900,0.950,1.150,1.200,1.350,1.400,1.600,1.650,1.850,1.900,...
+         2.100,2.150,2.300,2.350,2.550,2.600,2.800,2.850,3.050,3.100,3.300,3.350,3.500,3.550,3.750,3.800,4.000,...
+         4.050,4.250,4.300,4.450,4.500,4.700,4.750,4.950,5.000,5.200,5.250,5.450,5.500,5.650,5.700,5.900,5.950,...
+         6.150,6.200,6.400,6.450,6.650,6.700,6.850,6.900,7.100,7.150,7.350,7.400,7.650,7.700,7.900,7.950,8.250,...
+         8.300,8.800,8.850];
+
 
 % these are the candidate pixel blur radius to test
 % 2 meters - 10 meters
 % br1 = [9, 11, 13, 13, 14, 14, 15, 15, 15];
 % br2 = [7, 4, 3, 2, 2, 1, 1, 1, 0];
 % 30 - 49 meters - 1 meter increments
-br1 = [3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15];
-br2 = [31, 30, 30, 29, 28, 27, 26, 26, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19];
+%br1 = [3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15];
+%br2 = [31, 30, 30, 29, 28, 27, 26, 26, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19];
+%8-10
+br1 = [22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 27, 28, 28, 29, 29, 30, 30, 31, 31, 31, 32];
+br2 = [45, 45, 44, 44, 43, 42, 42, 41, 41, 40, 40, 40, 39, 39, 38, 38, 37, 37, 37, 36, 36];
+
 
 % depth map values - arrange from lowest to highest with 0 being the lowest
 % depthmap_range = [0:1:49];
-depthmap_range = [0:1:19];
+depthmap_range = [0:1:(numel(br1)-1)];
 max_depthmap = max(depthmap_range(:));
 num_dm_values = numel(depthmap_range);
 
@@ -150,21 +159,24 @@ fprintf('%s\n\n', save_path);
 % end
 
 tic;
-for kdx=0:(num_images-1)
+img1 = [];
+parfor kdx=0:(num_images-1)
     
-    % create an image as a background instead of a solid color
-%     img1 = gen_rand_image_all(img_h, img_w, 450, shape_lims_l);
 
-    seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-    calllib(lib_name, 'init', seed);
-    scale = 1;
-    for r=1:img_h
-        for c=1:img_w
-            index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-            img1(r,c,:) = color(index+1, :);
+    % create an image as a background instead of a solid color
+    if(strcmp(color_palette, 'full'))
+        img1 = gen_rand_image_all(img_h, img_w, 450, shape_lims_l);
+    else
+        seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
+        calllib(lib_name, 'init', seed);
+        scale = 1;
+        for r=1:img_h
+            for c=1:img_w
+                index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+                img1(r,c,:) = color(index+1, :);
+            end
         end
     end
-
     img2 = img1;
     
     % randomly generate DM_N depth values 
@@ -214,20 +226,21 @@ for kdx=0:(num_images-1)
         scale = 1/(max_depthmap + 1 - D(idx));
         
         for jdx=1:N
-            
-            % the number of shapes in an image block
-%             S = randi([25,45], 1);
-%             block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
-            
-            block = zeros(blk_h, blk_w, 3);            
-            seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-            calllib(lib_name, 'init', seed);
-            for r=1:blk_h
-                for c=1:blk_w
-                    index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-                    block(r,c,:) = color(index+1, :);
+            if(strcmp(color_palette, 'full'))
+                % the number of shapes in an image block
+                S = randi([25,45], 1);
+                block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
+            else
+                block = zeros(blk_h, blk_w, 3);            
+                seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
+                calllib(lib_name, 'init', seed);
+                for r=1:blk_h
+                    for c=1:blk_w
+                        index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
+                        block(r,c,:) = color(index+1, :);
+                    end
                 end
-            end            
+            end
             
             % generate random number to pick either the block or a circle
             shape_type = randi([0,1],1);
@@ -310,8 +323,10 @@ for kdx=0:(num_images-1)
         % save the image file and depth maps
         image_int = num2str(int_values(jdx)*100, '%03d');
         
-        img_filename1 = strcat('images/image_f1_', image_num, '_', image_int, '.png');
-        img_filename2 = strcat('images/image_f2_', image_num, '_', image_int, '.png');
+%         img_filename1 = strcat('images/image_f1_', image_num, '_', image_int, '.png');
+%         img_filename2 = strcat('images/image_f2_', image_num, '_', image_int, '.png');
+        img_filename1 = strcat('images/image_f1_', image_num, '.png');
+        img_filename2 = strcat('images/image_f2_', image_num, '.png');
         
         imwrite(img_int1, strcat(save_path, img_filename1));
         imwrite(img_int2, strcat(save_path, img_filename2));
@@ -324,7 +339,7 @@ toc;
 
 %% save the image names to the standard image input file structure
 
-save_name = strcat(save_path,'input_gen_',datestr(now,'yyyymmdd_HHMMSS'),'.txt');
+save_name = strcat(save_path,'input_file_',datestr(now,'yyyymmdd_HHMMSS'),'.txt');
 file_id = fopen(save_name, 'w');
 fprintf(file_id, '# %s\n\n', color_palette);
 fprintf(file_id, '%s\n\n', save_path);
@@ -336,8 +351,10 @@ for kdx=0:(num_images-1)
     
     for jdx=1:numel(int_values)
         image_int = num2str(int_values(jdx)*100, '%03d');
-        img_filename1 = strcat('images/image_f1_', image_num, '_', image_int, '.png');
-        img_filename2 = strcat('images/image_f2_', image_num, '_', image_int, '.png');
+%         img_filename1 = strcat('images/image_f1_', image_num, '_', image_int, '.png');
+%         img_filename2 = strcat('images/image_f2_', image_num, '_', image_int, '.png');
+        img_filename1 = strcat('images/image_f1_', image_num, '.png');
+        img_filename2 = strcat('images/image_f2_', image_num, '.png');
         fprintf(file_id, '%s, %s, %s\n', img_filename1, img_filename2, dm_filename);   
     end
     
