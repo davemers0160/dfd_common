@@ -44,7 +44,7 @@ color_palette = 'full';
 commandwindow;
 
 %% create the folders
-save_path = 'D:/IUPUI/Test_data/tb16_test/';
+save_path = 'D:/IUPUI/Test_data/tb18_test/';
 
 warning('off');
 mkdir(save_path);
@@ -92,10 +92,15 @@ sigma = [0.050,0.250,0.300,0.450,0.500,0.700,0.750,0.900,0.950,1.150,1.200,1.350
 % 30 - 49 meters - 1 meter increments
 %br1 = [3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15];
 %br2 = [31, 30, 30, 29, 28, 27, 26, 26, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19];
-%8-10
-br1 = [22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 27, 28, 28, 29, 29, 30, 30, 31, 31, 31, 32];
-br2 = [45, 45, 44, 44, 43, 42, 42, 41, 41, 40, 40, 40, 39, 39, 38, 38, 37, 37, 37, 36, 36];
-
+%tb16: 80-100
+% br1 = [22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 27, 28, 28, 29, 29, 30, 30, 31, 31, 31, 32];
+% br2 = [45, 45, 44, 44, 43, 42, 42, 41, 41, 40, 40, 40, 39, 39, 38, 38, 37, 37, 37, 36, 36];
+% tb17: 70-90
+% br1 = [26,27,27,28,29,30,31,31,32,33,33,34,34,35,36,36,37,37,38,38,39];
+% br2 = [41,40,39,38,38,37,36,35,35,34,33,33,32,31,31,30,30,29,29,28,28];
+% tb18: 60-100
+br1 = [1,2,3,4,5,6,7,8,9,9,10,11,12,12,13,14,15,15,16,16,17,18,18,19,19,20,20,21,21,22,22,23,23,24,24,25,25,25,26,26,27];
+br2 = [26,25,24,23,22,21,21,20,19,18,17,16,16,15,14,14,13,12,12,11,10,10,9,9,8,8,7,7,6,6,5,5,4,4,3,3,2,2,2,1,1];
 
 % depth map values - arrange from lowest to highest with 0 being the lowest
 % depthmap_range = [0:1:49];
@@ -159,10 +164,10 @@ fprintf('%s\n\n', save_path);
 % end
 
 tic;
-img1 = [];
+
 parfor kdx=0:(num_images-1)
     
-
+    img1 = [];
     % create an image as a background instead of a solid color
     if(strcmp(color_palette, 'full'))
         img1 = gen_rand_image_all(img_h, img_w, 450, shape_lims_l);
@@ -192,8 +197,8 @@ parfor kdx=0:(num_images-1)
     dm = (D(1)/255)*ones(img_h, img_w, 3);
     
     % blur that backgraound according to the depthmap value
-    k1 = create_gauss_kernel(kernel_size, sigma( br1( max_depthmap + 1 ) + 1 ) );
-    k2 = create_gauss_kernel(kernel_size, sigma( br2( max_depthmap + 1 ) + 1 ) );
+    k1 = create_gauss_kernel(kernel_size, sigma( br1( D(1) + 1 ) + 1 ) );
+    k2 = create_gauss_kernel(kernel_size, sigma( br2( D(1) + 1 ) + 1 ) );
 
     % blur the layer and the blur_mask
     img1 = imfilter(img1, k1, 'corr', 'replicate', 'same');
