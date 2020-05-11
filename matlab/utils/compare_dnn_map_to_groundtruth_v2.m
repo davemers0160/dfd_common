@@ -68,7 +68,7 @@ end
 
 figure(plot_num)
 set(gcf,'position',([100,100,1600,800]),'color','w')
-cm_plot = confusionchart(cm, [600:10:max_depthmap_value*25], 'RowSummary','row-normalized','ColumnSummary','column-normalized');
+cm_plot = confusionchart(cm, [0:1:max_depthmap_value], 'RowSummary','row-normalized','ColumnSummary','column-normalized');
 %set(gca,'fontweight','bold','FontSize',13);
 
 cm_plot.FontSize = 11;
