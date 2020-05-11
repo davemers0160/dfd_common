@@ -3,7 +3,7 @@ function [data_name, num_trials, nmae, nrmse, ssim, nmae_stats, nrmse_stats, ssi
     % file_name: the full file name of the txt file that contains the
     % results
     % index: this is used based on the type of dfd file that is being read
-    % in.  used because files may have silog, depth map variance.  Olnyl
+    % in.  used because files may have silog, depth map variance.  Only
     % looking for nmae, nrmse and ssim for training and testing
     
     data_params = parse_input_parameters(file_name);

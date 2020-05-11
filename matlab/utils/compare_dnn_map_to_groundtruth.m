@@ -36,7 +36,7 @@ if(dnn_dm_path == 0)
     return;
 end
 
-save_data = true;
+save_data = false;
 
 save_path = uigetdir(dnn_dm_path, 'Select Save Folder');
 if(save_path == 0)
@@ -44,6 +44,9 @@ if(save_path == 0)
 end
 
 %% load in the data
+
+% this is the maximum depthmap value possible
+max_depthmap_value = 40;
 
 % read in the dnn files first
 dnn_img = double(imread(fullfile(dnn_dm_path,dnn_dm_file)));
@@ -62,12 +65,17 @@ gt_img = double(imread(fullfile(gt_path, gt_file)));
 gt_img = gt_img(1:dnn_sz(1), 1:dnn_sz(2));
 
 
+%% try this instead
+
+[gt_error_value, combined_hist, cm] = get_depthmap_errors(gt_img, dnn_img, max_depthmap_value);
+
+
 %% get the dnn depth map distribution
 
 dm_tmp = dnn_img(:);
 gt_tmp = gt_img(:);
 
-for idx=1:256
+for idx=1:max_depthmap_value+1
     dm_hist(idx,1) = sum(dm_tmp==(idx-1));   
     gt_hist(idx,1) = sum(gt_tmp==(idx-1));
 end
@@ -76,11 +84,11 @@ combined_hist = cat(2,gt_hist,dm_hist);
 min_bin = 0;
 max_bin = numel(gt_hist);
 
-plot_step = 5;
+plot_step = 1;
 hist_bin_step = 1;
 hist_bins = min_bin:hist_bin_step:max_bin;
 
-x_lim = [0,255];
+x_lim = [0,max_depthmap_value+1];
 x = [min_bin:hist_bin_step:(max_bin-1)];
 
 y_m = ceil(log10(max(combined_hist(:))));
@@ -97,7 +105,7 @@ set(gca,'fontweight','bold','FontSize',13, 'yscale', 'log');
 % X-Axis
 xlim(x_lim);
 %xticks([(x_lim(1)+2):plot_step:(x_lim(2)-2)]);
-xticks([0:plot_step:max_bin]);
+xticks([0:plot_step:max_bin-1]);
 xtickangle(90);
 xlabel(strcat('Depth Map Value'),'fontweight','bold')
 
@@ -120,27 +128,27 @@ plot_num = plot_num + 1;
 %% create a mask where the dnn depthmap is xx% from the ground truth
 
 gt_diff = abs(gt_img - dnn_img);
-a = gt_diff/255;
+a = gt_diff/(max_depthmap_value);
 
 if(true)
 figure(plot_num);
 set(gcf,'position',([50,50,900,600]),'color','w', 'Name','Ground Truth Image');
 image(gt_img);
-colormap(jet(256));
+colormap(jet(max_depthmap_value+1));
 axis off;
 plot_num = plot_num + 1;
 
 figure(plot_num);
 set(gcf,'position',([50,50,900,600]),'color','w', 'Name','DNN Depth Map');
 image(dnn_img);
-colormap(jet(256));
+colormap(jet(max_depthmap_value+1));
 axis off;
 plot_num = plot_num + 1;
 
 figure(plot_num);
 set(gcf,'position',([50,50,900,600]),'color','w', 'Name','GT-DM Diff');
 image(gt_diff);
-colormap(jet(256));
+colormap(jet(max_depthmap_value+1));
 axis off;
 plot_num = plot_num + 1;
 
@@ -200,7 +208,7 @@ fprintf('Percent of mask values in depth map: %2.4f%%\n', (sum(gt_mask(:))*100)/
 % figure(plot_num); 
 % set(gcf,'position',([50,50,1200,250]),'color','w', 'Name','Combined');
 % image(combined_img); 
-% colormap(gray(256)); 
+% colormap(gray(max_depthmap_value+1)); 
 % axis off;
 % plot_num = plot_num + 1;
 % 
@@ -222,17 +230,18 @@ pad = 255*ones(img_size(1), img_space_h, 3);
 % grpund truth
 gt_sm = imresize(gt_img, img_size, 'nearest');
 %gt_sm = cat(3, gt_sm, gt_sm, gt_sm);
-gt_sm = 255*ind2rgb(gt_sm, jet(256));
+gt_sm = 255*ind2rgb(gt_sm, jet(max_depthmap_value+1));
 
 % dnn depth map
 dnn_img_sm = imresize(dnn_img, img_size, 'nearest');
 %dnn_img_sm = cat(3, dnn_img_sm, dnn_img_sm, dnn_img_sm);
-dnn_img_sm = 255*ind2rgb(dnn_img_sm, jet(256));
+dnn_img_sm = 255*ind2rgb(dnn_img_sm, jet(max_depthmap_value+1));
 
 % error
 gt_diff_sm = imresize(gt_diff, img_size, 'nearest');
 gt_diff_sm3 = cat(3, gt_diff_sm, gt_diff_sm, gt_diff_sm);
-gt_diff_sm = 255*ind2rgb(gt_diff_sm, jet(256));
+%gt_diff_sm = 255*ind2rgb(gt_diff_sm, jet(max_depthmap_value));
+gt_diff_sm = (max_depthmap_value)*ind2rgb(gt_diff_sm, jet(max_depthmap_value+1));
 
 % mask
 gt_mask_sm = imresize(gt_mask*255, img_size, 'nearest');
@@ -296,14 +305,14 @@ set(gcf,'position',([50,50,1300,300]),'color','w')
 
 subplot(1,4,1);
 image(gt_diff);
-colormap(jet(256));
+colormap(jet(max_depthmap_value+1));
 axis off;
 
-max_error = max((gt_diff(:)));
-max_error = 213;
+%max_error = max((gt_diff(:)));
+max_error = max_depthmap_value;
 cb = colorbar('fontweight','bold','FontSize', 12, 'Location', 'eastoutside');
 cb.Label.String = 'Depth Map Error';
-cb.Ticks = [0:20:max_error];
+cb.Ticks = [0:5:max_error];
 cb.TickLabels = num2str(cb.Ticks');
 cb.Limits = [0 max_error];
 
