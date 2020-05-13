@@ -53,7 +53,7 @@ mkdir(save_path, 'depth_maps');
 warning('on');
 
 % the number of images to generate - not including the intensity variants
-num_images = 30;
+num_images = 100;
 img_offset = 0;
 
 %% load up the image generator
@@ -115,7 +115,7 @@ num_dm_values = numel(depthmap_range);
 %% create all of the image generation parameters
 
 % max number of depth map values for a single image
-DM_N = floor(numel(depthmap_range)/2);
+DM_N = floor(numel(depthmap_range)/4);
 
 % initial number of objects at the first depthmap value
 num_objects = 40;          
@@ -170,23 +170,6 @@ fprintf('%s\n\n', save_path);
 tic;
 parfor kdx=0:(num_images-1)
     
-    img1 = [];
-    % create an image as a background instead of a solid color
-    if(strcmp(color_palette, 'full'))
-        img1 = gen_rand_image_all(img_h, img_w, 450, shape_lims_l);
-    else
-        seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-        calllib(lib_name, 'init', seed);
-        scale = 1;
-        for r=1:img_h
-            for c=1:img_w
-                index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-                img1(r,c,:) = color(index+1, :);
-            end
-        end
-    end
-    img2 = img1;
-    
     % randomly generate DM_N depth values 
     if(depthmap_range(end) >= depthmap_range(1))
         D = randi([depthmap_range(1), depthmap_range(end)], 1, DM_N);
@@ -199,65 +182,38 @@ parfor kdx=0:(num_images-1)
 %     dm = (max_depthmap/255)*ones(img_h, img_w, 3);
     dm = (D(1)/255)*ones(img_h, img_w, 3);
     
-    % blur that backgraound according to the depthmap value
-    k1 = create_gauss_kernel(kernel_size, sigma( br1( D(1) + 1 ) + 1 ) );
-    k2 = create_gauss_kernel(kernel_size, sigma( br2( D(1) + 1 ) + 1 ) );
-
-    % blur the layer and the blur_mask
-    img1 = imfilter(img1, k1, 'corr', 'replicate', 'same');
-    img2 = imfilter(img2, k2, 'corr', 'replicate', 'same');
-   
     for idx=2:numel(D)
-        
-        layer_img1 = img1;
-        layer_img2 = img2;        
-        
+
         % get the number of shapes for a given depth map value
 %         min_N = ceil(exp((3.7*(num_objects-idx))/num_objects));
 %         max_N = ceil(exp((4.0*(num_objects-idx))/num_objects));
 %         min_N = ceil(num_objects*(exp((4.0*((D(idx)-max_depthmap)))/max_depthmap)));
 %         max_N = ceil(num_objects*(exp((1.0*((D(idx)-max_depthmap)))/max_depthmap)));
+
         min_N = ceil( ((num_objects)/(1+exp(-0.2*D(idx)+(0.1*num_objects))) ) + 3);
         max_N = ceil(1.25*min_N);
+         
+%         min_N = ceil(D(idx) + 5);
+%         max_N = ceil(1.2*min_N);
         
         N = randi([min_N, max_N], 1);
         
         dm_blk = (D(idx)/255)*ones(blk_h, blk_w, 3);
         
-        % create the overlay mask and mask block
-        blur_mask = ones(img_h+blk_h, img_w+blk_w);
-        blur_mask_blk = zeros(blk_h, blk_w);
-        
-        blur_mask_blk_r = [];
-        dm_blk_r = [];
-        rotation_mask = [];
-        
-        scale = 1/(max_depthmap + 1 - D(idx));
         
         for jdx=1:N
-            if(strcmp(color_palette, 'full'))
-                % the number of shapes in an image block
-                S = randi([25,45], 1);
-                block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
-            else
-                block = zeros(blk_h, blk_w, 3);            
-                seed = int32(double(intmin('int32')) + double(intmax('uint32'))*rand(1));
-                calllib(lib_name, 'init', seed);
-                for r=1:blk_h
-                    for c=1:blk_w
-                        index = calllib(lib_name, 'octave_evaluate', r, c, scale, octaves, persistence);
-                        block(r,c,:) = color(index+1, :);
-                    end
-                end
-            end
+            % the number of shapes in an image block
+            S = randi([25,45], 1);
+            %block = gen_rand_image_all(blk_h, blk_w, S, shape_lims);
+
             
             % generate random number to pick either the block or a circle
             shape_type = randi([0,1],1);
             switch(shape_type)
                 case 0
                     A = randi([0, 89], 1, 1);
-                    block = imrotate(block, A, 'nearest', 'loose');
-                    blur_mask_blk_r = imrotate(blur_mask_blk, A, 'nearest', 'loose');
+                    %block = imrotate(block, A, 'nearest', 'loose');
+                    %blur_mask_blk_r = imrotate(blur_mask_blk, A, 'nearest', 'loose');
 
                     % check for a depthmap value of 0 and handle as a special case
                     if(D(idx) == 0)
@@ -273,76 +229,66 @@ parfor kdx=0:(num_images-1)
                     circle_mask = zeros(blk_h, blk_w);
                     circle_mask = insertShape(circle_mask, 'FilledCircle', [floor(blk_w/2), floor(blk_h/2), R], 'Color', [1,1,1], 'Opacity',1, 'SmoothEdges', false);
                     circle_mask = circle_mask(:,:,1);
-                    block = block.*circle_mask;
+                    %block = block.*circle_mask;
                     dm_blk_r = dm_blk.*circle_mask;
                     rotation_mask = circle_mask;
-                    blur_mask_blk_r = 1-circle_mask;
+                    %blur_mask_blk_r = 1-circle_mask;
             end
             
             X = randi([1,img_w-blk_w], 1);
             Y = randi([1,img_h-blk_h], 1);
             
-            layer_img1 = overlay_with_mask(layer_img1, block, rotation_mask, X, Y);
-            layer_img2 = overlay_with_mask(layer_img2, block, rotation_mask, X, Y);
+%             layer_img1 = overlay_with_mask(layer_img1, block, rotation_mask, X, Y);
+%             layer_img2 = overlay_with_mask(layer_img2, block, rotation_mask, X, Y);
             dm = overlay_with_mask(dm, dm_blk_r, rotation_mask, X, Y);
-            blur_mask = overlay_with_mask(blur_mask, blur_mask_blk_r, rotation_mask, X, Y);
+%             blur_mask = overlay_with_mask(blur_mask, blur_mask_blk_r, rotation_mask, X, Y);
             
         end
         
-        % create the 2-D gaussian kernel using the depth map value indexing the sigma array
-        d_idx = D(idx) + 1;
-
-        k1 = create_gauss_kernel(kernel_size, sigma( br1( d_idx ) + 1 ) );
-        k2 = create_gauss_kernel(kernel_size, sigma( br2( d_idx ) + 1 ) );
-        
-        % blur the layer and the blur_mask
-        LI_1 = imfilter(layer_img1, k1, 'corr', 'replicate', 'same');
-        BM_1 = imfilter(blur_mask, k1, 'corr', 'replicate', 'same');
-        LI_2 = imfilter(layer_img2, k2, 'corr', 'replicate', 'same');
-        BM_2 = imfilter(blur_mask, k2, 'corr', 'replicate', 'same');
-        
-        % bring the images back down to the original size
-        LI_1 = LI_1(1:img_h, 1:img_w, :);
-        BM_1 = BM_1(1:img_h, 1:img_w, :);
-        LI_2 = LI_2(1:img_h, 1:img_w, :);
-        BM_2 = BM_2(1:img_h, 1:img_w, :);
-        
-        % blending the current layer image and the previous image
-        img1 = (LI_1.*(1-BM_1) + (img1.*BM_1));
-        img2 = (LI_2.*(1-BM_2) + (img2.*BM_2));
+%         % create the 2-D gaussian kernel using the depth map value indexing the sigma array
+%         d_idx = D(idx) + 1;
+% 
+%         k1 = create_gauss_kernel(kernel_size, sigma( br1( d_idx ) + 1 ) );
+%         k2 = create_gauss_kernel(kernel_size, sigma( br2( d_idx ) + 1 ) );
+%         
+%         % blur the layer and the blur_mask
+%         LI_1 = imfilter(layer_img1, k1, 'corr', 'replicate', 'same');
+%         BM_1 = imfilter(blur_mask, k1, 'corr', 'replicate', 'same');
+%         LI_2 = imfilter(layer_img2, k2, 'corr', 'replicate', 'same');
+%         BM_2 = imfilter(blur_mask, k2, 'corr', 'replicate', 'same');
+%         
+%         % bring the images back down to the original size
+%         LI_1 = LI_1(1:img_h, 1:img_w, :);
+%         BM_1 = BM_1(1:img_h, 1:img_w, :);
+%         LI_2 = LI_2(1:img_h, 1:img_w, :);
+%         BM_2 = BM_2(1:img_h, 1:img_w, :);
+%         
+%         % blending the current layer image and the previous image
+%         img1 = (LI_1.*(1-BM_1) + (img1.*BM_1));
+%         img2 = (LI_2.*(1-BM_2) + (img2.*BM_2));
         
         bp = 1;
         
     end
 
-    img1 = img1(img_h_range, img_w_range, :);
-    img2 = img2(img_h_range, img_w_range, :);
+
     dm = dm(img_h_range, img_w_range, :);
     
     image_num = num2str(kdx+img_offset, '%03d');
     dm_filename = strcat('depth_maps/dm_', image_num, '.png');
     imwrite(dm, strcat(save_path, dm_filename));
-
-    % now that the image has been created let's run through the intensity values   
+    
     for jdx=1:numel(int_values)
-        
-        img_int1 = img1*int_values(jdx);
-        img_int2 = img2*int_values(jdx);
         
         % save the image file and depth maps
         image_int = num2str(int_values(jdx)*100, '%03d');
         
-%         img_filename1 = strcat('images/image_f1_', image_num, '_', image_int, '.png');
-%         img_filename2 = strcat('images/image_f2_', image_num, '_', image_int, '.png');
         img_filename1 = strcat('images/image_f1_', image_num, '.png');
         img_filename2 = strcat('images/image_f2_', image_num, '.png');
         
-        imwrite(img_int1, strcat(save_path, img_filename1));
-        imwrite(img_int2, strcat(save_path, img_filename2));
-        
         fprintf('%s, %s, %s\n', img_filename1, img_filename2, dm_filename);
     end
-        
+    
 end
 toc;
 
@@ -364,7 +310,7 @@ for kdx=0:(num_images-1)
 %         img_filename2 = strcat('images/image_f2_', image_num, '_', image_int, '.png');
         img_filename1 = strcat('images/image_f1_', image_num, '.png');
         img_filename2 = strcat('images/image_f2_', image_num, '.png');
-        fprintf(file_id, '%s, %s, %s\n', img_filename1, img_filename2, dm_filename);   
+        fprintf(file_id, '%s, %s, %s\n', img_filename1, img_filename2, dm_filename);
     end
     
 end
