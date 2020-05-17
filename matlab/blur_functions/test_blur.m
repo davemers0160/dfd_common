@@ -17,15 +17,19 @@ plot_num = 1;
 % kernel = kernel/(numel(kernel));
 
 % gaussian kernel size
-kernel_size = 71;
-
 sigma_start = 0.05;
 sigma_step = 0.05;
 sigma_stop = 10.0;
 
 %sigma = sigma_start:sigma_step:sigma_stop;
 
-max_blur_radius = 70;
+max_blur_radius = 64;
+kernel_size = max_blur_radius + 6;
+
+% makesure the kernel size is odd
+if(mod(kernel_size,2) == 0)
+    kernel_size = kernel_size + 1;
+end
 
 commandwindow;
 
@@ -63,7 +67,7 @@ for idx=1:numel(blur_radius)
     fprintf('{');
     str = '';
     for jdx=floor(kernel_size/2+1):kernel_size
-        str = strcat(str, num2str(kernel(jdx), '%1.5ff, '));
+        str = strcat(str, num2str(kernel(jdx), '%1.6ff, '));
     end
     str = strcat(str(1:end-1),'},');
     fprintf('%s\n', str);
