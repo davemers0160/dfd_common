@@ -17,14 +17,14 @@ plot_num = 1;
 % kernel = kernel/(numel(kernel));
 
 % gaussian kernel size
-sigma_start = 0.05;
-sigma_step = 0.05;
-sigma_stop = 10.0;
+sigma_start = 0.000;
+sigma_step = 0.005;
+sigma_stop = 20.0;
 
 %sigma = sigma_start:sigma_step:sigma_stop;
 
 max_blur_radius = 64;
-kernel_size = max_blur_radius + 6;
+kernel_size = max_blur_radius + 14;
 
 % makesure the kernel size is odd
 if(mod(kernel_size,2) == 0)
@@ -40,7 +40,10 @@ threshold = 1/255;
 blur_radius = [0:1:max_blur_radius];
 
 % create a single knife edge line
-data = cat(2, zeros(1, 100), 255*ones(1, 100+100));
+% 1-D case
+%data = cat(2, ones(1, 100), 254*ones(1, 100+100));
+% 2-D case
+data = cat(2, zeros(300, 100), 255*ones(300, 100+100));
 
 fprintf('float[,] kernel = new float[,] {\n');
 
@@ -50,75 +53,71 @@ sig_array = zeros(1,numel(blur_radius));
 for idx=1:numel(blur_radius)
     
     num = -1;
-    while(num < blur_radius(idx))
-    
-        kernel = create_1D_gauss_kernel(kernel_size, sigma);
+    while((num < blur_radius(idx)) || (sigma > sigma_stop))
+        sigma = sigma + sigma_step;
+        
+        % 1-D case
+%         kernel = create_1D_gauss_kernel(kernel_size, sigma);
+%         blur_data = conv(data, kernel,'same');
+%         blur_data = double(uint8(blur_data(1:200)));
 
-        blur_data = conv(data, kernel,'same');
-        blur_data = blur_data(1:200);
+        % 2-D case
+        kernel = create_gauss_kernel(kernel_size, sigma);
+        blur_data = conv2(data, kernel,'same');
+        blur_data = double(uint8(blur_data(150:150, 1:200)));
+        
 
         match = (blur_data > (blur_data(1)+threshold)) == (blur_data < (blur_data(end)-threshold));
 
         num = sum(match);
-        sigma = sigma + sigma_step;
+        
     end
     
-    %fprintf('sigma: %1.4f, num: %03d\n', sigma(idx), num);
     fprintf('{');
     str = '';
     for jdx=floor(kernel_size/2+1):kernel_size
-        str = strcat(str, num2str(kernel(jdx), '%1.6ff, '));
+        % 1-D case
+        %str = strcat(str, num2str(kernel(jdx), '%1.8ff, '));
+        % 2-D case
+        str = strcat(str, num2str(kernel(floor(kernel_size/2+1), jdx), '%11.10ff, '));
     end
     str = strcat(str(1:end-1),'},');
     fprintf('%s\n', str);
     
-    sig_array(idx) = sigma - sigma_step;
+    sig_array(idx) = sigma;
     
 end
 
 fprintf('};\n');
 
-    
+%%
 fprintf('sigma = [');
 str = '';
 for idx = 1:numel(sig_array)
-    
-    str = strcat(str, num2str(sig_array(idx), '%1.3f, '));
-    
+    str = strcat(str, num2str(sig_array(idx), '%6.4f, '));
 end
 str = strcat(str(1:end-1),'];');
 fprintf('%s\n', str);
 
+%% 
 
+s2 = sig_array(1:2:end);
+s2(1) = 0;
 
-% while(num < 20)
-%     blur_data = (conv(blur_data, kernel,'same'));
-% 
-%     % count the number of "pixels" affected
-%     %t1 = (blur > 0);
-%     %t2 = (blur < blur(end)); 
-% 
-%     %num = sum((t1+t2)==2)
-% 
-%     num = sum((blur_data > 0) == (blur_data < blur_data(end)));
-% end
-
-% blur_data = blur_data(1:200);
-
-bp = 1;
+P = polyfit([0:2:max_blur_radius],s2,1)
 
 %% plot the results
 
-figure(plot_num)
-plot([1:kernel_size], kernel, 'b')
-hold on
-plot_num = plot_num + 1;
+% figure(plot_num)
+% plot([1:kernel_size], kernel(floor(kernel_size/2),:), 'b')
+% hold on
+% plot_num = plot_num + 1;
 
-figure(plot_num)
-plot(data(1:200), 'b')
-hold on
-plot(blur_data, '--r')
-plot_num = plot_num + 1;
+% figure(plot_num)
+% plot(data(1:200), 'b')
+% hold on
+% plot(blur_data, '--r')
+% plot_num = plot_num + 1;
 
 figure(plot_num)
 plot(sig_array, '.-b')
@@ -130,5 +129,23 @@ image(blur_data);
 colormap(gray(256));
 plot_num = plot_num + 1;
 
+return;
 
+%% This is to create a check of the blur kernel sigma values
 
+save_path = 'D:\IUPUI\Test_Data\blur_tests';
+
+test_img = cat(2, zeros(300, 100), 255*ones(300, 100+100));
+
+s3 = 0.1725*(0:1:max_blur_radius);
+
+for idx = 1:numel(s3)
+    
+    kernel = create_gauss_kernel(kernel_size, s3(idx));
+    
+    blur_img = conv2(test_img, kernel,'same');
+    blur_img = blur_img(100:200, 1:200);
+    
+    imwrite(uint8(blur_img), fullfile(save_path,strcat('blur_image_', num2str(s3(idx), '%06.3f.png'))));
+    
+end

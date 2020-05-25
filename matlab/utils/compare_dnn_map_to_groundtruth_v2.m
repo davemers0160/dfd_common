@@ -64,6 +64,13 @@ for idx=1:num
 
 end
 
+
+sum_cm = sum(cm,2);
+cm_diag = diag(cm);
+
+cm_correct = cm_diag./sum_cm;
+
+
 %% try some plotting
 
 figure(plot_num)
@@ -78,6 +85,32 @@ ylabel('Actual Depthmap Values');
 
 ax = gca;
 ax.Position = [0.04 0.07 0.94 0.9];
+plot_num = plot_num + 1;
+
+%% plot the percent correct classification
+
+x_lim = [-1,max_depthmap_value+1];
+x = 0:1:max_depthmap_value;
+
+figure(plot_num)
+set(gcf,'position',([100,100,1200,600]),'color','w')
+bar(x, 1-cm_correct,'b')
+set(gca,'fontweight','bold','FontSize',13);
+grid on
+box on
+
+% X-Axis
+xlim(x_lim);
+xticks([0:1:max_depthmap_value]);
+xtickangle(90);
+xlabel(strcat('Depth Map Value'),'fontweight','bold')
+
+% Y-Axis
+ylim([0 1]);
+ylabel('Depth Map Error Percentage','fontweight','bold')
+
+ax = gca;
+ax.Position = [0.06 0.1 0.92 0.86];
 plot_num = plot_num + 1;
 
 %% histogram plot
@@ -123,7 +156,7 @@ b(2).FaceColor = 'r';
 %title('Depth Map Distribution Comparison', 'fontweight','bold','FontSize',16);
 lgd = legend('Ground Truth', 'DNN Depth Map', 'location','southoutside', 'orientation', 'horizontal');
 ax = gca;
-ax.Position = [0.07 0.17 0.91 0.80];
+ax.Position = [0.06 0.17 0.92 0.78];
 
 plot_num = plot_num + 1;
 
