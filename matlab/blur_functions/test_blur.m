@@ -133,6 +133,9 @@ return;
 
 %% This is to create a check of the blur kernel sigma values
 
+max_blur_radius = 64;
+kernel_size = 79;
+
 save_path = 'D:\IUPUI\Test_Data\blur_tests';
 
 test_img = cat(2, zeros(300, 100), 255*ones(300, 100+100));
@@ -146,6 +149,6 @@ for idx = 1:numel(s3)
     blur_img = conv2(test_img, kernel,'same');
     blur_img = blur_img(100:200, 1:200);
     
-    imwrite(uint8(blur_img), fullfile(save_path,strcat('blur_image_', num2str(s3(idx), '%06.3f.png'))));
+    imwrite(uint8(blur_img), fullfile(save_path,strcat('blur_image_', num2str(s3(idx), '%07.4f.png'))));
     
 end

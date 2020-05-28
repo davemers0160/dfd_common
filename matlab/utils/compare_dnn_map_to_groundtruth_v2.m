@@ -42,10 +42,15 @@ else
     num = size(gt_params,1);
 end
 
+%% get the maximum depthmap value
+prompt = {'Enter maximum depthmap value:'};
+dlgtitle = '';
+definput = {'20'};
+answer = inputdlg(prompt,dlgtitle,[1 40],definput);
+
+max_depthmap_value = str2double(answer);
 
 %% run through each depth map and get the results
-
-max_depthmap_value = 40;
 
 combined_hist = zeros(max_depthmap_value+1, 2);
 cm = zeros(max_depthmap_value+1, max_depthmap_value+1);
@@ -85,6 +90,9 @@ ylabel('Actual Depthmap Values');
 
 ax = gca;
 ax.Position = [0.04 0.07 0.94 0.9];
+
+print(plot_num, '-dpng', fullfile(dm_input_path, 'depth_map_results_cm.png'));
+
 plot_num = plot_num + 1;
 
 %% plot the percent correct classification
@@ -94,7 +102,7 @@ x = 0:1:max_depthmap_value;
 
 figure(plot_num)
 set(gcf,'position',([100,100,1200,600]),'color','w')
-bar(x, 1-cm_correct,'b')
+bar(x, (1-cm_correct)*100,'b')
 set(gca,'fontweight','bold','FontSize',13);
 grid on
 box on
@@ -106,11 +114,15 @@ xtickangle(90);
 xlabel(strcat('Depth Map Value'),'fontweight','bold')
 
 % Y-Axis
-ylim([0 1]);
+ylim([0 100]);
+yticks([0:10:100]);
 ylabel('Depth Map Error Percentage','fontweight','bold')
 
 ax = gca;
-ax.Position = [0.06 0.1 0.92 0.86];
+ax.Position = [0.065 0.1 0.91 0.86];
+
+print(plot_num, '-dpng', fullfile(dm_input_path, 'depth_map_results_error.png'));
+
 plot_num = plot_num + 1;
 
 %% histogram plot

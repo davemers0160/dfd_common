@@ -21,17 +21,18 @@ end
 
 %save_path = 'D:\IUPUI\Test_Data\lens_raw\temp_test\crop';
 %save_path = 'D:\IUPUI\Test_Data\lens_raw\nrzu\crop';
-save_path = 'D:\IUPUI\Test_Data\lens_raw\nrzd\crop';
+% save_path = 'D:\IUPUI\Test_Data\lens_raw\nrzd\crop';
+save_path = image_path;
 
 commandwindow;
 
 %%
 
 
-% crop_x1 = 331;
-% crop_y1 = 259;
-% crop_x2 = crop_x1+127;
-% crop_y2 = crop_y1+255;
+crop_x1 = 1;
+crop_y1 = 1;
+crop_x2 = 384;
+crop_y2 = 384;
 
 % temp crop
 % crop_x1 = 363;  %379;
@@ -45,10 +46,10 @@ commandwindow;
 % crop_y2 = crop_y1+599;
 
 % nrz tests
-crop_x1 = 38;
-crop_y1 = 35;
-crop_x2 = crop_x1+127;
-crop_y2 = crop_y1+127;
+% crop_x1 = 38;
+% crop_y1 = 35;
+% crop_x2 = crop_x1+127;
+% crop_y2 = crop_y1+127;
 
 
 figure(plot_num);
