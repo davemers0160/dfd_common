@@ -62,7 +62,7 @@ for idx=1:numel(blur_radius)
 %         blur_data = double(uint8(blur_data(1:200)));
 
         % 2-D case
-        kernel = create_gauss_kernel(kernel_size, sigma);
+        kernel = single(create_gauss_kernel(kernel_size, sigma));
         blur_data = conv2(data, kernel,'same');
         blur_data = double(uint8(blur_data(150:150, 1:200)));
         
@@ -104,7 +104,11 @@ fprintf('%s\n', str);
 s2 = sig_array(1:2:end);
 s2(1) = 0;
 
-P = polyfit([0:2:max_blur_radius],s2,1)
+x = [0:2:max_blur_radius];
+
+P = polyfit(x, s2, 2)
+
+slope = x(:)\s2(:)
 
 %% plot the results
 
@@ -140,11 +144,12 @@ save_path = 'D:\IUPUI\Test_Data\blur_tests';
 
 test_img = cat(2, zeros(300, 100), 255*ones(300, 100+100));
 
-s3 = 0.1725*(0:1:max_blur_radius);
+x = 0:1:max_blur_radius;
+s3 = 0.0001389*(x.*x) + 0.164*x;
 
 for idx = 1:numel(s3)
     
-    kernel = create_gauss_kernel(kernel_size, s3(idx));
+    kernel = single(create_gauss_kernel(kernel_size, s3(idx)));
     
     blur_img = conv2(test_img, kernel,'same');
     blur_img = blur_img(100:200, 1:200);
@@ -152,3 +157,19 @@ for idx = 1:numel(s3)
     imwrite(uint8(blur_img), fullfile(save_path,strcat('blur_image_', num2str(s3(idx), '%07.4f.png'))));
     
 end
+
+%% test to display kernel
+
+% =0.0001377901*(A2*A2)+0.163250668*A2
+% 0.0001389*x^2 + 0.164*x
+max_blur_radius = 64;
+kernel_size = 79;
+
+x = 0:1:max_blur_radius;
+s3 = 0.0001389*(x.*x) + 0.164*x;
+
+print_half_kernel(s3, kernel_size, 1);
+
+
+
+
