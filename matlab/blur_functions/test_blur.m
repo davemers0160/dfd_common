@@ -170,6 +170,12 @@ s3 = 0.0001389*(x.*x) + 0.164*x;
 
 print_half_kernel(s3, kernel_size, 1);
 
-
-
+%%
+fprintf('sigma = [');
+str = '';
+for idx = 1:numel(sig_array)
+    str = strcat(str, num2str(s3(idx), '%6.4f, '));
+end
+str = strcat(str(1:end-1),'];');
+fprintf('%s\n', str);
 
