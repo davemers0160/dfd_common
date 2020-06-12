@@ -24,7 +24,7 @@ sigma_stop = 20.0;
 %sigma = sigma_start:sigma_step:sigma_stop;
 
 max_blur_radius = 64;
-kernel_size = max_blur_radius + 14;
+kernel_size = max_blur_radius + 20;
 
 % makesure the kernel size is odd
 if(mod(kernel_size,2) == 0)
@@ -41,9 +41,9 @@ blur_radius = [0:1:max_blur_radius];
 
 % create a single knife edge line
 % 1-D case
-%data = cat(2, ones(1, 100), 254*ones(1, 100+100));
+data = cat(2, ones(1, 300), 254*ones(1, 600));
 % 2-D case
-data = cat(2, zeros(300, 100), 255*ones(300, 100+100));
+%data = cat(2, zeros(300, 200), 255*ones(300, 400));
 
 fprintf('float[,] kernel = new float[,] {\n');
 
@@ -57,14 +57,14 @@ for idx=1:numel(blur_radius)
         sigma = sigma + sigma_step;
         
         % 1-D case
-%         kernel = create_1D_gauss_kernel(kernel_size, sigma);
-%         blur_data = conv(data, kernel,'same');
-%         blur_data = double(uint8(blur_data(1:200)));
+        kernel = create_1D_gauss_kernel(kernel_size, sigma);
+        blur_data = conv(data, kernel,'same');
+        blur_data = double(uint8(blur_data(1:200)));
 
         % 2-D case
-        kernel = single(create_gauss_kernel(kernel_size, sigma));
-        blur_data = conv2(data, kernel,'same');
-        blur_data = double(uint8(blur_data(150:150, 1:200)));
+%         kernel = single(create_gauss_kernel(kernel_size, sigma));
+%         blur_data = conv2(data, kernel,'same');
+%         blur_data = double(floor(blur_data(150:150, 1:400)));
         
 
         match = (blur_data > (blur_data(1)+threshold)) == (blur_data < (blur_data(end)-threshold));
@@ -77,9 +77,9 @@ for idx=1:numel(blur_radius)
     str = '';
     for jdx=floor(kernel_size/2+1):kernel_size
         % 1-D case
-        %str = strcat(str, num2str(kernel(jdx), '%1.8ff, '));
+        str = strcat(str, num2str(kernel(jdx), '%1.8ff, '));
         % 2-D case
-        str = strcat(str, num2str(kernel(floor(kernel_size/2+1), jdx), '%11.10ff, '));
+        %str = strcat(str, num2str(kernel(floor(kernel_size/2+1), jdx), '%11.10ff, '));
     end
     str = strcat(str(1:end-1),'},');
     fprintf('%s\n', str);
