@@ -94,11 +94,11 @@ for idx=1:length(params)
     image(dm);
     colormap(jet(20));
     
-    imwrite(img1, fullfile(save_path, params{idx}{1}));
-    imwrite(img2, fullfile(save_path, params{idx}{2}));
-    imwrite(uint8(dm), fullfile(save_path, 'depthmaps', strcat(dm_filename,'.png')));
-        
-    %input(' ')
+%     imwrite(img1, fullfile(save_path, params{idx}{1}));
+%     imwrite(img2, fullfile(save_path, params{idx}{2}));
+%     imwrite(uint8(dm), fullfile(save_path, 'depthmaps', strcat(dm_filename,'.png')));
+%         
+    input(' ')
 end
 
 red = red/length(params);
